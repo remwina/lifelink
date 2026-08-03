@@ -1,53 +1,53 @@
-# 🩸 LifeLink
+# LifeLink
 
 > A blood donation companion app built with Flutter — designed for donors in Metro Manila.
 
 LifeLink helps you track your eligibility, find nearby donation centers, book appointments, and respond to urgent blood shortage alerts.
 
-> ⚠️ This is a UI prototype with local mock data. No backend or Firebase integration.
+> This is a UI prototype with local mock data. No backend or Firebase integration.
 
 ---
 
-## ✨ Features
+## Features
 
-### 🏠 Home Dashboard
+### Home Dashboard
 - Personalized greeting with blood type badge
 - Eligibility card showing days until your next donation
 - Blood supply grid for all 8 blood types with color-coded levels
 - Personal impact stats — donations, lives helped, blood given
 - Quick-access list of nearby donation centers
 
-### 🚨 Pulse Alert
+### Pulse Alert
 - Full-screen urgent shortage overlay
 - Shows blood type needed, supply percentage, and nearest open centers
 - One-tap action to jump straight to booking
 
-### 🔔 Alerts
+### Alerts
 - Grouped notification feed (New / Earlier)
 - Four notification types: urgent, reminder, achievement, update
 - Mark all as read with inline action links
 
-### 📅 Booking Wizard
+### Booking Wizard
 A 4-step appointment flow:
 1. Pick a date and time slot
 2. Health screener questionnaire
 3. Review your appointment details
 4. Confirmation screen
 
-### 🗺️ Map
+### Map
 - Interactive OpenStreetMap powered by `flutter_map`
 - Donation center pins with slot-availability indicators (open / limited / full)
 - Search by name or address, filter by "Slots open" or "Nearby"
 - Bottom sheet with center cards and direct booking CTA
 
-### 👤 Profile
+### Profile
 - Collapsing header with avatar, blood type, and donation streak
 - Three tabs: **History · Challenges · Badges**
 - Progress bars for active challenges and earned/locked badge grid
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | | |
 |---|---|
@@ -59,7 +59,7 @@ A 4-step appointment flow:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 lib/
@@ -88,7 +88,7 @@ lib/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 **Prerequisites:** Flutter SDK 3.12+ · Dart SDK 3.12+
 
@@ -104,7 +104,7 @@ The app is portrait-only and targets Android and iOS. It also runs on Flutter We
 
 ---
 
-## 📝 Notes
+## Notes
 
 - All donor and center data is hardcoded mock data — no API calls are made
 - Map tiles load from OpenStreetMap; an internet connection is required to display them
