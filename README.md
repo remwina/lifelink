@@ -8,13 +8,13 @@ LifeLink helps you track your eligibility, find nearby donation centers, book ap
 
 ## Features
 
-### 🔐 Authentication
+### Authentication
 - Email/password sign-up and sign-in via Firebase Auth
 - Blood type selection during registration
 - Forgot password / email reset flow
 - Automatic auth-gate routing (login ↔ app shell)
 
-### 🏠 Home Dashboard
+### Home Dashboard
 - Personalized greeting with blood type badge (live from Firestore)
 - Eligibility card showing days until next donation
 - Blood supply grid for all 8 blood types — **live Firestore data**, editable by admin
@@ -26,7 +26,7 @@ LifeLink helps you track your eligibility, find nearby donation centers, book ap
 - Shows blood type needed, supply percentage, and nearest open centers
 - One-tap action to jump straight to booking
 
-### 🔔 Alerts
+### Alerts
 - Real-time notification feed per user from Firestore
 - Grouped New / Earlier with unread badge count
 - Mark all as read — persisted to Firestore (batch write)
@@ -45,7 +45,7 @@ A 4-step appointment flow:
 - Search by name or address, filter by "Slots open" or "Nearby"
 - Bottom sheet with center cards and direct booking CTA
 
-### 👤 Profile
+### Profile
 - Collapsing header with avatar, blood type (from Firestore), and donation streak
 - Three tabs: **History · Challenges · Badges**
 - History loaded from `users/{uid}/donationHistory` sub-collection
@@ -180,7 +180,7 @@ On first launch, the app auto-seeds donation centers and blood supply levels int
 
 ---
 
-## 🔒 Firestore Security Rules (production)
+## Firestore Security Rules (production)
 
 Replace the default test rules with these before going live:
 
