@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../models/blood_supply.dart';
+import '../../models/donation_center.dart';
 import '../../providers/app_provider.dart';
 
 class PulseAlertOverlay extends StatefulWidget {
@@ -81,6 +83,27 @@ class _AlertSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+
+    // Find the lowest blood supply level to highlight
+    final supply = provider.bloodSupply;
+    BloodSupplyEntry? critical;
+    if (supply.isNotEmpty) {
+      critical = supply.reduce(
+          (a, b) => a.percentage < b.percentage ? a : b);
+    }
+
+    // Nearest open center
+    final openCenters = provider.centers
+        .where((c) => c.slotStatus != SlotStatus.full)
+        .toList()
+      ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+    final nearest = openCenters.isNotEmpty ? openCenters.first : null;
+
+    final bloodType = critical?.type ?? 'O−';
+    final supplyPct = critical != null ? '${critical.percentage}%' : '—';
+    final centersCount = openCenters.length.toString();
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
@@ -146,7 +169,8 @@ class _AlertSheet extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(20),
@@ -171,26 +195,26 @@ class _AlertSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Stats row
+                // Stats row — real data
                 Row(
                   children: [
                     _AlertStat(
-                      value: 'O−',
+                      value: bloodType,
                       label: 'Blood type needed',
                       bgColor: AppColors.dangerLight,
                       textColor: AppColors.danger,
                     ),
                     const SizedBox(width: 10),
                     _AlertStat(
-                      value: '8%',
+                      value: supplyPct,
                       label: 'Supply remaining',
                       bgColor: AppColors.warningLight,
                       textColor: AppColors.warning,
                     ),
                     const SizedBox(width: 10),
                     _AlertStat(
-                      value: '3',
-                      label: 'Centers nearby',
+                      value: centersCount,
+                      label: 'Centers open',
                       bgColor: AppColors.successLight,
                       textColor: AppColors.success,
                     ),
@@ -198,10 +222,13 @@ class _AlertSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Description
                 Text(
-                  'Philippine General Hospital and 2 other centers urgently need O− donors. '
-                  'Supply is critically low. Your donation can save up to 3 lives today.',
+                  nearest != null
+                      ? '${nearest.name} and ${(openCenters.length - 1).clamp(0, 99)} other '
+                        'center${openCenters.length != 2 ? 's' : ''} urgently need $bloodType donors. '
+                        'Supply is critically low. Your donation can save up to 3 lives today.'
+                      : 'Blood banks in Metro Manila urgently need $bloodType donors. '
+                        'Supply is critically low at $supplyPct. Your donation can save lives.',
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     color: AppColors.textSecondary,
@@ -210,68 +237,73 @@ class _AlertSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Nearest center chip
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceAlt,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(8),
+                // Nearest center — real data
+                if (nearest != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceAlt,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.location_on_rounded,
+                              color: AppColors.primary, size: 18),
                         ),
-                        child: const Icon(Icons.location_on_rounded,
-                            color: AppColors.primary, size: 18),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Philippine General Hospital',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nearest.name,
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
-                            ),
-                            Text(
-                              '1.2 km away · Slots available',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
+                              Text(
+                                '${nearest.distanceLabel} away · ${nearest.slotLabel}',
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(
-                        '1.2 km',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
+                        Text(
+                          nearest.distanceLabel,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 const SizedBox(height: 16),
 
-                // CTA buttons
+                // Fix #11: index 2 = Booking tab (was wrongly 1)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
                       onDismiss();
-                      context.read<AppProvider>().setIndex(1);
+                      // Pre-select nearest center if available
+                      if (nearest != null) {
+                        context.read<AppProvider>().selectCenter(nearest);
+                      }
+                      context.read<AppProvider>().setIndex(2);
                     },
                     icon: const Icon(Icons.calendar_today_rounded, size: 16),
                     label: const Text('Book Appointment Now'),

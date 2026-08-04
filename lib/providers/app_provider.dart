@@ -6,7 +6,6 @@ import '../models/donation_center.dart';
 import '../models/notification_item.dart';
 import '../models/user_profile.dart';
 import '../services/firestore_service.dart';
-
 class AppProvider extends ChangeNotifier {
   final FirestoreService _db = FirestoreService();
 
@@ -37,24 +36,47 @@ class AppProvider extends ChangeNotifier {
   UserProfile? _user;
   UserProfile? get user => _user;
 
+  bool _userLoading = false;
+  bool get userLoading => _userLoading;
+
   StreamSubscription<UserProfile?>? _userSub;
 
   void listenToUser(String uid) {
     _userSub?.cancel();
-    _userSub = _db.userProfileStream(uid).listen((profile) async {
-      if (profile == null) return;
-      // Also load history (sub-collection, not in the stream)
-      final history = await _db.getDonationHistory(uid);
-      _user = profile.copyWith(history: history);
-      notifyListeners();
-    });
+    _userLoading = true;
+    notifyListeners();
+
+    _userSub = _db.userProfileStream(uid).listen(
+      (profile) async {
+        if (profile == null) {
+          // Document doesn't exist yet — wait for it
+          return;
+        }
+        List<DonationHistory> history = [];
+        try {
+          history = await _db.getDonationHistory(uid);
+        } catch (_) {}
+        _user = profile.copyWith(history: history);
+        _userLoading = false;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('AppProvider: userProfileStream error: $error');
+        _userLoading = false;
+        // Fallback profile so screens don't spin forever
+        _user ??= UserProfile(uid: uid, name: 'Donor', email: '', bloodType: '—');
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> refreshUserHistory(String uid) async {
     if (_user == null) return;
-    final history = await _db.getDonationHistory(uid);
-    _user = _user!.copyWith(history: history);
-    notifyListeners();
+    try {
+      final history = await _db.getDonationHistory(uid);
+      _user = _user!.copyWith(history: history);
+      notifyListeners();
+    } catch (_) {}
   }
 
   // ── Notifications ──────────────────────────────────────────────────────────
@@ -66,65 +88,141 @@ class AppProvider extends ChangeNotifier {
 
   void listenToNotifications(String uid) {
     _notifSub?.cancel();
-    _notifSub = _db.notificationsStream(uid).listen((items) {
-      _notifications = items;
-      notifyListeners();
-    });
+    _notifSub = _db.notificationsStream(uid).listen(
+      (items) {
+        _notifications = items;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('AppProvider: notificationsStream error: $error');
+      },
+    );
   }
 
   Future<void> markAllRead(String uid) async {
-    await _db.markAllNotificationsRead(uid);
-    // The stream will update _notifications automatically
+    try {
+      await _db.markAllNotificationsRead(uid);
+    } catch (_) {}
   }
 
   // ── Donation centers ───────────────────────────────────────────────────────
   List<DonationCenter> _centers = [];
   List<DonationCenter> get centers => _centers;
 
+  bool _centersLoading = false;
+  bool get centersLoading => _centersLoading;
+
   StreamSubscription<List<DonationCenter>>? _centersSub;
 
   void listenToCenters() {
     _centersSub?.cancel();
-    _centersSub = _db.centersStream().listen((list) {
-      _centers = list;
-      notifyListeners();
-    });
+    _centersLoading = true;
+    notifyListeners();
+
+    _centersSub = _db.centersStream().listen(
+      (list) {
+        _centers = list;
+        _centersLoading = false;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('AppProvider: centersStream error: $error');
+        _centersLoading = false;
+        notifyListeners();
+      },
+    );
   }
 
   // ── Blood supply ───────────────────────────────────────────────────────────
   List<BloodSupplyEntry> _bloodSupply = [];
   List<BloodSupplyEntry> get bloodSupply => _bloodSupply;
 
+  bool _bloodSupplyLoading = false;
+  bool get bloodSupplyLoading => _bloodSupplyLoading;
+
   StreamSubscription<List<BloodSupplyEntry>>? _bloodSupplySub;
 
   void listenToBloodSupply() {
     _bloodSupplySub?.cancel();
-    _bloodSupplySub = _db.bloodSupplyStream().listen((list) {
-      _bloodSupply = list;
-      notifyListeners();
-    });
+    _bloodSupplyLoading = true;
+    notifyListeners();
+
+    _bloodSupplySub = _db.bloodSupplyStream().listen(
+      (list) {
+        _bloodSupply = list;
+        _bloodSupplyLoading = false;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('AppProvider: bloodSupplyStream error: $error');
+        _bloodSupplyLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // ── Appointments ──────────────────────────────────────────────────────────
+  List<Appointment> _appointments = [];
+  List<Appointment> get appointments => _appointments;
+
+  Appointment? get nextAppointment {
+    final upcoming = _appointments
+        .where((a) => a.status == AppointmentStatus.upcoming)
+        .toList();
+    return upcoming.isNotEmpty ? upcoming.first : null;
+  }
+
+  StreamSubscription<List<Appointment>>? _appointmentsSub;
+
+  void listenToAppointments(String uid) {
+    _appointmentsSub?.cancel();
+    _appointmentsSub = _db.appointmentsStream(uid).listen(
+      (list) {
+        _appointments = list;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('AppProvider: appointmentsStream error: $error');
+      },
+    );
   }
 
   // ── Session management ─────────────────────────────────────────────────────
 
-  /// Called once when a user signs in. Starts all real-time listeners.
   void startSession(String uid) {
     listenToUser(uid);
     listenToNotifications(uid);
     listenToCenters();
     listenToBloodSupply();
+    listenToAppointments(uid);
+    _seedIfNeeded();
   }
 
-  /// Called on sign-out. Cancels all listeners and clears state.
+  Future<void> _seedIfNeeded() async {
+    try {
+      await Future.wait([
+        _db.seedCentersIfEmpty(),
+        _db.seedBloodSupplyIfEmpty(),
+      ]);
+    } catch (_) {
+      // Seeding failed — streams will show empty state, retry next session
+    }
+  }
+
   void clearSession() {
     _userSub?.cancel();
     _notifSub?.cancel();
     _centersSub?.cancel();
     _bloodSupplySub?.cancel();
+    _appointmentsSub?.cancel();
     _user = null;
+    _userLoading = false;
     _notifications = [];
     _centers = [];
+    _centersLoading = false;
     _bloodSupply = [];
+    _bloodSupplyLoading = false;
+    _appointments = [];
     _currentIndex = 0;
     _pulseAlertVisible = false;
     resetBooking();
@@ -210,9 +308,19 @@ class AppProvider extends ChangeNotifier {
   bool get screenerPassed =>
       screenerComplete && _screenerAnswers.values.every((v) => v);
 
-  /// Persists the appointment to Firestore, then advances to the confirmed step.
+  // Fix #15: guard against empty uid
   Future<void> confirmBooking(String uid) async {
-    if (_selectedCenter == null || _selectedSlot == null) return;
+    if (uid.isEmpty) {
+      _bookingError = 'You must be signed in to book an appointment.';
+      notifyListeners();
+      return;
+    }
+    if (_selectedCenter == null || _selectedSlot == null) {
+      _bookingError = 'Please select a center, date and time.';
+      notifyListeners();
+      return;
+    }
+
     _isConfirming = true;
     _bookingError = null;
     notifyListeners();

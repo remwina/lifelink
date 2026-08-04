@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import '../../../models/donation_center.dart';
+import '../../../providers/app_provider.dart';
 import '../../../widgets/app_card.dart';
 
 class NearbyCentersCard extends StatelessWidget {
-  final List<DonationCenter> centers;
   final void Function(DonationCenter) onBook;
 
   const NearbyCentersCard({
     super.key,
-    required this.centers,
     required this.onBook,
   });
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+    final centers = provider.centers;
+    final isLoading = provider.centersLoading;
     final visible = centers.take(3).toList();
 
     return AppCard(
@@ -32,19 +35,39 @@ class NearbyCentersCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...visible.asMap().entries.map((e) {
-            final isLast = e.key == visible.length - 1;
-            return Column(
-              children: [
-                _CenterRow(center: e.value, onTap: () => onBook(e.value)),
-                if (!isLast)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Divider(height: 1, color: AppColors.border),
-                  ),
-              ],
-            );
-          }),
+          if (isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(
+                    color: AppColors.primary, strokeWidth: 2),
+              ),
+            )
+          else if (visible.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'No centers found nearby.',
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            )
+          else
+            ...visible.asMap().entries.map((e) {
+              final isLast = e.key == visible.length - 1;
+              return Column(
+                children: [
+                  _CenterRow(center: e.value, onTap: () => onBook(e.value)),
+                  if (!isLast)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, color: AppColors.border),
+                    ),
+                ],
+              );
+            }),
         ],
       ),
     );

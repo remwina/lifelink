@@ -147,6 +147,14 @@ class _ProfileInfo extends StatelessWidget {
 
   const _ProfileInfo({required this.user});
 
+  // Fix #13: safe initials — handles empty or single-word names
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
@@ -161,7 +169,7 @@ class _ProfileInfo extends StatelessWidget {
                 radius: 42,
                 backgroundColor: AppColors.primaryLight,
                 child: Text(
-                  user.name.split(' ').map((w) => w[0]).take(2).join(),
+                  _initials(user.name),
                   style: GoogleFonts.dmSerifDisplay(
                     fontSize: 28,
                     color: AppColors.primary,

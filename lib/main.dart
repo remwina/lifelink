@@ -6,9 +6,11 @@ import 'core/theme.dart';
 import 'firebase_options.dart';
 import 'providers/app_provider.dart';
 import 'providers/auth_provider.dart' as ap;
+import 'screens/admin/admin_screen.dart';
 import 'screens/auth/login_screen.dart';
-import 'services/firestore_service.dart';
 import 'shell.dart';
+
+const String _adminEmail = 'admin@lifelink.app';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +21,6 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.dark,
   ));
 
-  // Detect whether Firebase has been configured by checking for placeholder values
   bool firebaseReady = false;
   if (DefaultFirebaseOptions.android.apiKey != 'YOUR_ANDROID_API_KEY') {
     try {
@@ -27,18 +28,8 @@ Future<void> main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       firebaseReady = true;
-
-      // Seed static collections on first run — failures here are non-fatal
-      // (e.g. Firestore not yet created, or no network). The app still opens.
-      try {
-        final db = FirestoreService();
-        await Future.wait([
-          db.seedCentersIfEmpty(),
-          db.seedBloodSupplyIfEmpty(),
-        ]);
-      } catch (_) {
-        // Seeding failed — app will retry next launch or show empty state
-      }
+      // NOTE: Seeding is now done after sign-in inside AppProvider.startSession
+      // so it runs with auth context. Do NOT seed here.
     } catch (_) {
       firebaseReady = false;
     }
@@ -68,7 +59,10 @@ class LifeLinkApp extends StatelessWidget {
   }
 }
 
-// ── Auth gate — listens to auth state and routes accordingly ─────────────────
+// ── Auth gate ─────────────────────────────────────────────────────────────────
+// Fix #1 & #14: Use a StatefulWidget with a flag so startSession and
+// clearSession are only ever called once per auth-state transition,
+// not on every rebuild.
 class _AuthGate extends StatefulWidget {
   const _AuthGate();
 
@@ -77,15 +71,16 @@ class _AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<_AuthGate> {
+  String? _activeUid; // uid whose session is currently running
+
   @override
   Widget build(BuildContext context) {
-    final authStatus = context.watch<ap.AuthProvider>().status;
+    // Watch both providers so we rebuild on auth changes
+    final authProvider = context.watch<ap.AuthProvider>();
     final appProvider = context.read<AppProvider>();
-    final firebaseUser = context.read<ap.AuthProvider>().firebaseUser;
 
-    switch (authStatus) {
+    switch (authProvider.status) {
       case ap.AuthStatus.unknown:
-        // Splash / loading state
         return const Scaffold(
           backgroundColor: AppColors.background,
           body: Center(
@@ -94,25 +89,34 @@ class _AuthGateState extends State<_AuthGate> {
         );
 
       case ap.AuthStatus.authenticated:
-        // Start Firestore listeners for this user
-        if (firebaseUser != null) {
+        final uid = authProvider.firebaseUser?.uid;
+        final email = authProvider.firebaseUser?.email ?? '';
+        final isAdmin = email == _adminEmail;
+
+        // Only start a new session when the uid actually changes
+        if (uid != null && uid != _activeUid) {
+          _activeUid = uid;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            appProvider.startSession(firebaseUser.uid);
+            // Admin doesn't need AppProvider streams
+            if (!isAdmin && mounted) appProvider.startSession(uid);
           });
         }
-        return const AppShell();
+        return isAdmin ? const AdminScreen() : const AppShell();
 
       case ap.AuthStatus.unauthenticated:
-        // Clear provider state on sign-out
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          appProvider.clearSession();
-        });
+        // Only clear once when transitioning away from a session
+        if (_activeUid != null) {
+          _activeUid = null;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) appProvider.clearSession();
+          });
+        }
         return const LoginScreen();
     }
   }
 }
 
-// ── Setup banner — shown before flutterfire configure is run ─────────────────
+// ── Setup banner ──────────────────────────────────────────────────────────────
 class _SetupBanner extends StatelessWidget {
   const _SetupBanner();
 

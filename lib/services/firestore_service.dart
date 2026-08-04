@@ -22,16 +22,21 @@ import '../models/user_profile.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // ── Collection refs ────────────────────────────────────────────────────────
+  // ── Collection refs (also exposed for admin screen) ───────────────────────
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _db.collection('users');
 
-  CollectionReference<Map<String, dynamic>> get _centers =>
+  CollectionReference<Map<String, dynamic>> get centersCollection =>
       _db.collection('centers');
 
-  CollectionReference<Map<String, dynamic>> get _bloodSupply =>
+  CollectionReference<Map<String, dynamic>> get bloodSupplyCollection =>
       _db.collection('bloodSupply');
+
+  CollectionReference<Map<String, dynamic>> get _centers => centersCollection;
+
+  CollectionReference<Map<String, dynamic>> get _bloodSupply =>
+      bloodSupplyCollection;
 
   CollectionReference<Map<String, dynamic>> get _appointments =>
       _db.collection('appointments');
@@ -92,8 +97,9 @@ class FirestoreService {
   // ── Donation history ───────────────────────────────────────────────────────
 
   Future<List<DonationHistory>> getDonationHistory(String uid) async {
+    // Order by the server timestamp field, falling back gracefully
     final snap = await _historyFor(uid)
-        .orderBy('date', descending: true)
+        .orderBy('donatedAt', descending: true)
         .limit(20)
         .get();
     return snap.docs.map(DonationHistory.fromFirestore).toList();

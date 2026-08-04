@@ -96,13 +96,14 @@ class BloodSupplyGrid extends StatelessWidget {
 
 // Split into two rows of 4 (matching prototype layout)
 class BloodSupplyGridWidget extends StatelessWidget {
-  const BloodSupplyGridWidget({super.key});
+  final String highlightType;
+
+  const BloodSupplyGridWidget({super.key, this.highlightType = ''});
 
   @override
   Widget build(BuildContext context) {
     final supply = context.watch<AppProvider>().bloodSupply;
 
-    // Show a loading shimmer while data hasn't arrived yet
     if (supply.isEmpty) {
       return AppCard(
         padding: const EdgeInsets.all(16),
@@ -137,23 +138,48 @@ class BloodSupplyGridWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  '🩸 Blood Supply — Metro Manila',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '🩸 Blood Supply — Metro Manila',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (highlightType.isNotEmpty)
+                      Text(
+                        'Your type is highlighted',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                'Live data',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                        color: AppColors.success, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Live',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      color: AppColors.success,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -163,14 +189,15 @@ class BloodSupplyGridWidget extends StatelessWidget {
                 ((constraints.maxWidth - 36) / 4 * 1.1).clamp(48.0, 72.0);
             final entries = supply.take(8).toList();
             final row1 = entries.length >= 4 ? entries.sublist(0, 4) : entries;
-            final row2 =
-                entries.length >= 8 ? entries.sublist(4, 8) : <BloodSupplyEntry>[];
+            final row2 = entries.length >= 8
+                ? entries.sublist(4, 8)
+                : <BloodSupplyEntry>[];
             return Column(
               children: [
-                _BarRow(entries: row1, barHeight: barH),
+                _BarRow(entries: row1, barHeight: barH, highlightType: highlightType),
                 if (row2.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  _BarRow(entries: row2, barHeight: barH),
+                  _BarRow(entries: row2, barHeight: barH, highlightType: highlightType),
                 ],
               ],
             );
@@ -184,8 +211,13 @@ class BloodSupplyGridWidget extends StatelessWidget {
 class _BarRow extends StatelessWidget {
   final List<BloodSupplyEntry> entries;
   final double barHeight;
+  final String highlightType;
 
-  const _BarRow({required this.entries, required this.barHeight});
+  const _BarRow({
+    required this.entries,
+    required this.barHeight,
+    this.highlightType = '',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +227,11 @@ class _BarRow extends StatelessWidget {
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(left: e.key == 0 ? 0 : 9),
-            child: _BloodTypeBar(entry: e.value, barHeight: barHeight),
+            child: _BloodTypeBar(
+              entry: e.value,
+              barHeight: barHeight,
+              isHighlighted: e.value.type == highlightType,
+            ),
           ),
         );
       }).toList(),
@@ -206,80 +242,99 @@ class _BarRow extends StatelessWidget {
 class _BloodTypeBar extends StatelessWidget {
   final BloodSupplyEntry entry;
   final double barHeight;
+  final bool isHighlighted;
 
-  const _BloodTypeBar({required this.entry, required this.barHeight});
+  const _BloodTypeBar({
+    required this.entry,
+    required this.barHeight,
+    this.isHighlighted = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final fillHeight = barHeight * (entry.percentage / 100);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Type label
-        Text(
-          entry.type,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 5),
-        // Bar
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              Container(
-                width: double.infinity,
-                height: barHeight,
-                color: AppColors.levelBg,
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 700),
-                curve: Curves.easeOut,
-                width: double.infinity,
-                height: fillHeight.clamp(2.0, barHeight),
-                color: entry.levelColor,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${entry.percentage}%',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.dmSans(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        if (entry.isLow) ...[
-          const SizedBox(height: 2),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: AppColors.dangerLight,
-              borderRadius: BorderRadius.circular(3),
-            ),
-            child: Text(
-              'LOW',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 8,
-                fontWeight: FontWeight.w800,
-                color: AppColors.danger,
-                letterSpacing: 0.3,
-              ),
+    return Container(
+      padding: isHighlighted
+          ? const EdgeInsets.all(4)
+          : EdgeInsets.zero,
+      decoration: isHighlighted
+          ? BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.5),
+                  width: 1.5),
+              color: AppColors.primaryLight.withValues(alpha: 0.4),
+            )
+          : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            entry.type,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: isHighlighted ? FontWeight.w800 : FontWeight.w700,
+              color: isHighlighted ? AppColors.primary : AppColors.textPrimary,
             ),
           ),
-        ] else
-          const SizedBox(height: 14), // keep rows same height
-      ],
+          const SizedBox(height: 5),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: barHeight,
+                  color: AppColors.levelBg,
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOut,
+                  width: double.infinity,
+                  height: fillHeight.clamp(2.0, barHeight),
+                  color: entry.levelColor,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${entry.percentage}%',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isHighlighted
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
+            ),
+          ),
+          if (entry.isLow) ...[
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: AppColors.dangerLight,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Text(
+                'LOW',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.dmSans(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.danger,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ] else
+            const SizedBox(height: 14),
+        ],
+      ),
     );
   }
 }

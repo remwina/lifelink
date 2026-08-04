@@ -30,6 +30,7 @@ class AuthProvider extends ChangeNotifier {
       _status = user != null
           ? AuthStatus.authenticated
           : AuthStatus.unauthenticated;
+      debugPrint('AuthProvider: status=$_status email=${user?.email}');
       notifyListeners();
     });
   }

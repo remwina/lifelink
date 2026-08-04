@@ -18,9 +18,20 @@ class DonationHistory {
 
   factory DonationHistory.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;
+    // Support both old string 'date' and new Timestamp 'donatedAt'
+    String dateStr = d['date'] as String? ?? '';
+    final ts = d['donatedAt'] as Timestamp?;
+    if (dateStr.isEmpty && ts != null) {
+      final dt = ts.toDate();
+      const months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      dateStr = '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+    }
     return DonationHistory(
       id: doc.id,
-      date: d['date'] as String? ?? '',
+      date: dateStr,
       center: d['center'] as String? ?? '',
       type: d['type'] as String? ?? 'Whole Blood',
       volumeL: (d['volumeL'] as num?)?.toDouble() ?? 0.45,
@@ -29,6 +40,7 @@ class DonationHistory {
 
   Map<String, dynamic> toFirestore() => {
         'date': date,
+        'donatedAt': FieldValue.serverTimestamp(),
         'center': center,
         'type': type,
         'volumeL': volumeL,

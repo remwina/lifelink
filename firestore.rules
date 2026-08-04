@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper ───────────────────────────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.email == 'admin@lifelink.app';
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // ── Users ────────────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      allow read: if isAdmin();
+
+      match /donationHistory/{doc} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+        allow read: if isAdmin();
+      }
+    }
+
+    // ── Appointments ─────────────────────────────────────────────────────────
+    match /appointments/{docId} {
+      allow create: if isSignedIn()
+                    && request.resource.data.userId == request.auth.uid;
+      allow read:   if isSignedIn()
+                    && resource.data.userId == request.auth.uid;
+      allow read:   if isAdmin();
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+    match /notifications/{uid}/items/{docId} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // ── Centers ──────────────────────────────────────────────────────────────
+    // Any signed-in user can create (for seeding on first run).
+    // Only admin can update/delete after that.
+    match /centers/{docId} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Blood supply ──────────────────────────────────────────────────────────
+    match /bloodSupply/{docId} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
