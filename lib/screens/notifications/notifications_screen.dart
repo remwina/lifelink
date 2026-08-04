@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../models/notification_item.dart';
 import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart' as ap;
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -11,6 +12,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
+    final uid = context.read<ap.AuthProvider>().firebaseUser?.uid ?? '';
     final notifications = provider.notifications;
     final unread = notifications.where((n) => !n.isRead).toList();
     final read = notifications.where((n) => n.isRead).toList();
@@ -27,7 +29,7 @@ class NotificationsScreen extends StatelessWidget {
         actions: [
           if (provider.unreadCount > 0)
             TextButton(
-              onPressed: provider.markAllRead,
+              onPressed: () => provider.markAllRead(uid),
               child: Text(
                 'Mark all read',
                 style: GoogleFonts.dmSans(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 
@@ -16,15 +17,29 @@ class BloodSupplyEntry {
     if (isMid) return AppColors.levelMid;
     return AppColors.levelLow;
   }
+
+  factory BloodSupplyEntry.fromFirestore(DocumentSnapshot doc) {
+    final d = doc.data() as Map<String, dynamic>;
+    return BloodSupplyEntry(
+      type: d['type'] as String? ?? doc.id,
+      percentage: (d['percentage'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toFirestore() => {
+        'type': type,
+        'percentage': percentage,
+      };
 }
 
-final List<BloodSupplyEntry> bloodSupplyData = const [
-  BloodSupplyEntry(type: 'A+', percentage: 72),
-  BloodSupplyEntry(type: 'A−', percentage: 34),
-  BloodSupplyEntry(type: 'B+', percentage: 58),
-  BloodSupplyEntry(type: 'B−', percentage: 21),
-  BloodSupplyEntry(type: 'AB+', percentage: 65),
-  BloodSupplyEntry(type: 'AB−', percentage: 18),
-  BloodSupplyEntry(type: 'O+', percentage: 47),
-  BloodSupplyEntry(type: 'O−', percentage: 8),
+// ── Seed data — written once to Firestore, editable by admin in console ───────
+final List<Map<String, dynamic>> seedBloodSupply = [
+  {'type': 'A+', 'percentage': 72},
+  {'type': 'A−', 'percentage': 34},
+  {'type': 'B+', 'percentage': 58},
+  {'type': 'B−', 'percentage': 21},
+  {'type': 'AB+', 'percentage': 65},
+  {'type': 'AB−', 'percentage': 18},
+  {'type': 'O+', 'percentage': 47},
+  {'type': 'O−', 'percentage': 8},
 ];

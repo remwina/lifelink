@@ -1,4 +1,4 @@
-package com.lifelink.lifelink
+package com.lifelink.app
 
 import io.flutter.embedding.android.FlutterActivity
 

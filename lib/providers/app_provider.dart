@@ -1,11 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/user_profile.dart';
-import '../models/notification_item.dart';
-import '../models/donation_center.dart';
+import '../models/blood_supply.dart';
 import '../models/booking.dart';
+import '../models/donation_center.dart';
+import '../models/notification_item.dart';
+import '../models/user_profile.dart';
+import '../services/firestore_service.dart';
 
 class AppProvider extends ChangeNotifier {
-  // ── Navigation ────────────────────────────────────────────────────────────
+  final FirestoreService _db = FirestoreService();
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
 
@@ -14,7 +19,7 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Pulse Alert overlay ───────────────────────────────────────────────────
+  // ── Pulse Alert overlay ────────────────────────────────────────────────────
   bool _pulseAlertVisible = false;
   bool get pulseAlertVisible => _pulseAlertVisible;
 
@@ -28,36 +33,106 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── User ──────────────────────────────────────────────────────────────────
-  UserProfile get user => mockUser;
+  // ── User profile ───────────────────────────────────────────────────────────
+  UserProfile? _user;
+  UserProfile? get user => _user;
 
-  // ── Notifications ─────────────────────────────────────────────────────────
-  List<NotificationItem> _notifications = List.from(notificationsData);
-  List<NotificationItem> get notifications => _notifications;
+  StreamSubscription<UserProfile?>? _userSub;
 
-  int get unreadCount => _notifications.where((n) => !n.isRead).length;
+  void listenToUser(String uid) {
+    _userSub?.cancel();
+    _userSub = _db.userProfileStream(uid).listen((profile) async {
+      if (profile == null) return;
+      // Also load history (sub-collection, not in the stream)
+      final history = await _db.getDonationHistory(uid);
+      _user = profile.copyWith(history: history);
+      notifyListeners();
+    });
+  }
 
-  void markAllRead() {
-    _notifications = _notifications
-        .map((n) => NotificationItem(
-              id: n.id,
-              type: n.type,
-              title: n.title,
-              body: n.body,
-              timeAgo: n.timeAgo,
-              isRead: true,
-              hasAction: n.hasAction,
-              actionLabel: n.actionLabel,
-            ))
-        .toList();
+  Future<void> refreshUserHistory(String uid) async {
+    if (_user == null) return;
+    final history = await _db.getDonationHistory(uid);
+    _user = _user!.copyWith(history: history);
     notifyListeners();
   }
 
-  // ── Centers ───────────────────────────────────────────────────────────────
-  List<DonationCenter> get centers => centersData;
+  // ── Notifications ──────────────────────────────────────────────────────────
+  List<NotificationItem> _notifications = [];
+  List<NotificationItem> get notifications => _notifications;
+  int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
-  // ── Booking flow ──────────────────────────────────────────────────────────
-  int _bookingStep = 0; // 0=pick date/slot, 1=screener, 2=review, 3=confirmed
+  StreamSubscription<List<NotificationItem>>? _notifSub;
+
+  void listenToNotifications(String uid) {
+    _notifSub?.cancel();
+    _notifSub = _db.notificationsStream(uid).listen((items) {
+      _notifications = items;
+      notifyListeners();
+    });
+  }
+
+  Future<void> markAllRead(String uid) async {
+    await _db.markAllNotificationsRead(uid);
+    // The stream will update _notifications automatically
+  }
+
+  // ── Donation centers ───────────────────────────────────────────────────────
+  List<DonationCenter> _centers = [];
+  List<DonationCenter> get centers => _centers;
+
+  StreamSubscription<List<DonationCenter>>? _centersSub;
+
+  void listenToCenters() {
+    _centersSub?.cancel();
+    _centersSub = _db.centersStream().listen((list) {
+      _centers = list;
+      notifyListeners();
+    });
+  }
+
+  // ── Blood supply ───────────────────────────────────────────────────────────
+  List<BloodSupplyEntry> _bloodSupply = [];
+  List<BloodSupplyEntry> get bloodSupply => _bloodSupply;
+
+  StreamSubscription<List<BloodSupplyEntry>>? _bloodSupplySub;
+
+  void listenToBloodSupply() {
+    _bloodSupplySub?.cancel();
+    _bloodSupplySub = _db.bloodSupplyStream().listen((list) {
+      _bloodSupply = list;
+      notifyListeners();
+    });
+  }
+
+  // ── Session management ─────────────────────────────────────────────────────
+
+  /// Called once when a user signs in. Starts all real-time listeners.
+  void startSession(String uid) {
+    listenToUser(uid);
+    listenToNotifications(uid);
+    listenToCenters();
+    listenToBloodSupply();
+  }
+
+  /// Called on sign-out. Cancels all listeners and clears state.
+  void clearSession() {
+    _userSub?.cancel();
+    _notifSub?.cancel();
+    _centersSub?.cancel();
+    _bloodSupplySub?.cancel();
+    _user = null;
+    _notifications = [];
+    _centers = [];
+    _bloodSupply = [];
+    _currentIndex = 0;
+    _pulseAlertVisible = false;
+    resetBooking();
+    notifyListeners();
+  }
+
+  // ── Booking flow ───────────────────────────────────────────────────────────
+  int _bookingStep = 0;
   int get bookingStep => _bookingStep;
 
   DonationCenter? _selectedCenter;
@@ -72,11 +147,18 @@ class AppProvider extends ChangeNotifier {
   Map<String, bool> _screenerAnswers = {};
   Map<String, bool> get screenerAnswers => _screenerAnswers;
 
+  bool _isConfirming = false;
+  bool get isConfirming => _isConfirming;
+
+  String? _bookingError;
+  String? get bookingError => _bookingError;
+
   void selectCenter(DonationCenter c) {
     _selectedCenter = c;
     _bookingStep = 0;
     _selectedSlot = null;
     _screenerAnswers = {};
+    _bookingError = null;
     notifyListeners();
   }
 
@@ -109,8 +191,11 @@ class AppProvider extends ChangeNotifier {
   void resetBooking() {
     _bookingStep = 0;
     _selectedCenter = null;
+    _selectedDateIndex = 0;
     _selectedSlot = null;
     _screenerAnswers = {};
+    _isConfirming = false;
+    _bookingError = null;
     notifyListeners();
   }
 
@@ -124,4 +209,32 @@ class AppProvider extends ChangeNotifier {
 
   bool get screenerPassed =>
       screenerComplete && _screenerAnswers.values.every((v) => v);
+
+  /// Persists the appointment to Firestore, then advances to the confirmed step.
+  Future<void> confirmBooking(String uid) async {
+    if (_selectedCenter == null || _selectedSlot == null) return;
+    _isConfirming = true;
+    _bookingError = null;
+    notifyListeners();
+
+    try {
+      final dates = bookingDates;
+      final appointment = Appointment(
+        id: '',
+        userId: uid,
+        centerName: _selectedCenter!.name,
+        centerAddress: _selectedCenter!.address,
+        centerId: _selectedCenter!.id,
+        date: dates[_selectedDateIndex],
+        time: _selectedSlot!.time,
+      );
+      await _db.createAppointment(appointment);
+      _bookingStep = 3;
+    } catch (e) {
+      _bookingError = 'Could not save appointment. Please try again.';
+    } finally {
+      _isConfirming = false;
+      notifyListeners();
+    }
+  }
 }

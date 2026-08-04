@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import '../../../models/blood_supply.dart';
+import '../../../providers/app_provider.dart';
 import '../../../widgets/app_card.dart';
 
 class BloodSupplyGrid extends StatelessWidget {
@@ -9,12 +11,12 @@ class BloodSupplyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final supply = context.watch<AppProvider>().bloodSupply;
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header — two lines on small screens
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,29 +59,35 @@ class BloodSupplyGrid extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          // 4-column grid — aspect ratio computed from screen width
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // Each cell width = (total - 3 gaps) / 4
-              final cellW = (constraints.maxWidth - 36) / 4;
-              // Bar height = ~55% of cell width to stay proportional
-              final barH = (cellW * 1.1).clamp(48.0, 72.0);
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: List.generate(bloodSupplyData.length, (i) {
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(left: i == 0 ? 0 : 9),
-                      child: _BloodTypeBar(
-                        entry: bloodSupplyData[i],
-                        barHeight: barH,
+          if (supply.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(
+                    color: AppColors.primary, strokeWidth: 2),
+              ),
+            )
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final cellW = (constraints.maxWidth - 36) / 4;
+                final barH = (cellW * 1.1).clamp(48.0, 72.0);
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: List.generate(supply.length.clamp(0, 4), (i) {
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: i == 0 ? 0 : 9),
+                        child: _BloodTypeBar(
+                          entry: supply[i],
+                          barHeight: barH,
+                        ),
                       ),
-                    ),
-                  );
-                }),
-              );
-            },
-          ),
+                    );
+                  }),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -92,6 +100,34 @@ class BloodSupplyGridWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final supply = context.watch<AppProvider>().bloodSupply;
+
+    // Show a loading shimmer while data hasn't arrived yet
+    if (supply.isEmpty) {
+      return AppCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '🩸 Blood Supply — Metro Manila',
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Center(
+              child: CircularProgressIndicator(
+                  color: AppColors.primary, strokeWidth: 2),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    }
+
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -123,14 +159,19 @@ class BloodSupplyGridWidget extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           LayoutBuilder(builder: (context, constraints) {
-            final barH = ((constraints.maxWidth - 36) / 4 * 1.1).clamp(48.0, 72.0);
-            final row1 = bloodSupplyData.sublist(0, 4);
-            final row2 = bloodSupplyData.sublist(4, 8);
+            final barH =
+                ((constraints.maxWidth - 36) / 4 * 1.1).clamp(48.0, 72.0);
+            final entries = supply.take(8).toList();
+            final row1 = entries.length >= 4 ? entries.sublist(0, 4) : entries;
+            final row2 =
+                entries.length >= 8 ? entries.sublist(4, 8) : <BloodSupplyEntry>[];
             return Column(
               children: [
                 _BarRow(entries: row1, barHeight: barH),
-                const SizedBox(height: 12),
-                _BarRow(entries: row2, barHeight: barH),
+                if (row2.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _BarRow(entries: row2, barHeight: barH),
+                ],
               ],
             );
           }),

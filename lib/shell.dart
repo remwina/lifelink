@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'providers/app_provider.dart';
+import 'providers/auth_provider.dart' as ap;
 import 'screens/home/home_screen.dart';
 import 'screens/notifications/notifications_screen.dart';
 import 'screens/booking/booking_screen.dart';

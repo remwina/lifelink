@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import '../../../models/booking.dart';
 import '../../../providers/app_provider.dart';
+import '../../../providers/auth_provider.dart' as ap;
 import '../widgets/booking_progress.dart';
 
 class ReviewStep extends StatelessWidget {
@@ -12,6 +13,7 @@ class ReviewStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
+    final uid = context.read<ap.AuthProvider>().firebaseUser?.uid ?? '';
     final center = provider.selectedCenter;
     final slot = provider.selectedSlot;
     final date = bookingDates[provider.selectedDateIndex];
@@ -77,7 +79,7 @@ class ReviewStep extends StatelessWidget {
                                   _ReviewRow(
                                     icon: Icons.person_rounded,
                                     label: 'Donor',
-                                    value: '${user.name} · ${user.bloodType}',
+                                    value: '${user?.name ?? '—'} · ${user?.bloodType ?? '—'}',
                                   ),
                                   const Divider(height: 20),
                                   _ReviewRow(
@@ -167,27 +169,59 @@ class ReviewStep extends StatelessWidget {
                     Container(
                       color: AppColors.background,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: provider.advanceBooking,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                      child: Column(
+                      children: [
+                        if (provider.bookingError != null)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.dangerLight,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              provider.bookingError!,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 13,
+                                color: AppColors.danger,
+                              ),
                             ),
                           ),
-                          child: Text(
-                            'Confirm Appointment',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: provider.isConfirming
+                                ? null
+                                : () => provider.confirmBooking(uid),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
+                            child: provider.isConfirming
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    'Confirm Appointment',
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                           ),
                         ),
-                      ),
+                      ],
+                    ),
                     ),
                   ],
                 ),

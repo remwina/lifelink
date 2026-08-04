@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart' as ap;
 import '../../models/user_profile.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,6 +31,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AppProvider>().user;
+
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -64,6 +74,44 @@ class _ProfileHeader extends StatelessWidget {
       pinned: true,
       backgroundColor: AppColors.background,
       automaticallyImplyLeading: false,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.logout_rounded,
+              color: AppColors.textMuted, size: 20),
+          tooltip: 'Sign out',
+          onPressed: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text(
+                  'Sign out',
+                  style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                ),
+                content: Text(
+                  'Are you sure you want to sign out?',
+                  style: GoogleFonts.dmSans(),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: Text(
+                      'Sign out',
+                      style: GoogleFonts.dmSans(color: AppColors.danger),
+                    ),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true && context.mounted) {
+              await context.read<ap.AuthProvider>().signOut();
+            }
+          },
+        ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.pin,
         background: _ProfileInfo(user: user),

@@ -18,6 +18,16 @@ class HomeScreen extends StatelessWidget {
     final user = provider.user;
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
+    // Still loading the user profile from Firestore
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(

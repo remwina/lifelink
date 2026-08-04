@@ -13,7 +13,8 @@ class SlotPickerStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
-    final center = provider.selectedCenter ?? centersData.first;
+    final center = provider.selectedCenter ??
+        (provider.centers.isNotEmpty ? provider.centers.first : null);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -59,7 +60,24 @@ class SlotPickerStep extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            _CenterSelector(selected: center),
+                            if (center != null)
+                              _CenterSelector(selected: center)
+                            else
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Text(
+                                  'Loading centers…',
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 13,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ),
                             const SizedBox(height: 20),
 
                             // Date picker
