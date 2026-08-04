@@ -1,4 +1,4 @@
-# 🩸 LifeLink
+# LifeLink
 
 > A blood donation companion app built with Flutter + Firebase — designed for donors in Metro Manila.
 
@@ -6,7 +6,7 @@ LifeLink helps you track your eligibility, find nearby donation centers, book ap
 
 ---
 
-## ✨ Features
+## Features
 
 ### 🔐 Authentication
 - Email/password sign-up and sign-in via Firebase Auth
@@ -21,7 +21,7 @@ LifeLink helps you track your eligibility, find nearby donation centers, book ap
 - Personal impact stats — donations, lives helped, blood given
 - Quick-access list of nearby donation centers (live from Firestore)
 
-### 🚨 Pulse Alert
+### Pulse Alert
 - Full-screen urgent shortage overlay
 - Shows blood type needed, supply percentage, and nearest open centers
 - One-tap action to jump straight to booking
@@ -32,14 +32,14 @@ LifeLink helps you track your eligibility, find nearby donation centers, book ap
 - Mark all as read — persisted to Firestore (batch write)
 - Seed notifications created automatically on registration
 
-### 📅 Booking Wizard
+### Booking Wizard
 A 4-step appointment flow:
 1. Pick a date and time slot
 2. Health screener questionnaire
 3. Review your appointment details
 4. Confirmation — **appointment saved to Firestore**
 
-### 🗺️ Map
+### Map
 - Interactive OpenStreetMap powered by `flutter_map`
 - Donation center pins with slot-availability indicators (live from Firestore)
 - Search by name or address, filter by "Slots open" or "Nearby"
@@ -53,7 +53,7 @@ A 4-step appointment flow:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | | |
 |---|---|
@@ -67,7 +67,7 @@ A 4-step appointment flow:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 lib/
@@ -136,7 +136,7 @@ bloodSupply/{type}       ← admin-managed, seeded once on first run
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Flutter SDK 3.12+ · Dart SDK 3.12+
@@ -224,7 +224,7 @@ service cloud.firestore {
 
 ---
 
-## 📝 Notes
+## Notes
 
 - All blood supply and donation center data is seeded to Firestore on first run and is **editable via the Firebase Console** — changes appear in the app in real time
 - Map tiles load from OpenStreetMap; an internet connection is required
