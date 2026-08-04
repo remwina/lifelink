@@ -103,7 +103,7 @@ lib/
 
 ---
 
-## 🗄️ Firestore Schema
+## Firestore Schema
 
 ```
 users/{uid}
