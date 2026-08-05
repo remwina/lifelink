@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../models/user_profile.dart';
 import '../../providers/app_provider.dart';
-import '../../providers/auth_provider.dart' as ap;
 import '../../widgets/blood_drop_icon.dart';
 import 'widgets/blood_supply_grid.dart';
 import 'widgets/eligibility_card.dart';
@@ -23,17 +23,13 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
-    final user = provider.user;
+    final user = provider.user ?? const UserProfile(
+      uid: '',
+      name: 'Donor',
+      email: '',
+      bloodType: '—',
+    );
     final bottomPad = MediaQuery.of(context).padding.bottom;
-
-    if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
 
     // Find user's blood type supply level
     final mySupply = provider.bloodSupply

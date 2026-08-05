@@ -46,6 +46,19 @@ class AppProvider extends ChangeNotifier {
     _userLoading = true;
     notifyListeners();
 
+    // Hard timeout — if Firestore rules block the read, the stream
+    // silently emits nothing (especially on web). After 6s we stop
+    // spinning and show a fallback so the app is usable.
+    Future.delayed(const Duration(seconds: 6), () {
+      if (!_disposed && _userLoading) {
+        debugPrint('AppProvider: userProfileStream timed out — using fallback');
+        _userLoading = false;
+        _user ??= UserProfile(
+            uid: uid, name: 'Donor', email: '', bloodType: '—');
+        notifyListeners();
+      }
+    });
+
     _userSub = _db.userProfileStream(uid).listen(
       (profile) async {
         if (profile == null) {
@@ -63,11 +76,24 @@ class AppProvider extends ChangeNotifier {
       onError: (Object error) {
         debugPrint('AppProvider: userProfileStream error: $error');
         _userLoading = false;
-        // Fallback profile so screens don't spin forever
-        _user ??= UserProfile(uid: uid, name: 'Donor', email: '', bloodType: '—');
+        _user ??= UserProfile(
+            uid: uid, name: 'Donor', email: '', bloodType: '—');
         notifyListeners();
       },
     );
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _userSub?.cancel();
+    _notifSub?.cancel();
+    _centersSub?.cancel();
+    _bloodSupplySub?.cancel();
+    _appointmentsSub?.cancel();
+    super.dispose();
   }
 
   Future<void> refreshUserHistory(String uid) async {
@@ -119,6 +145,13 @@ class AppProvider extends ChangeNotifier {
     _centersLoading = true;
     notifyListeners();
 
+    Future.delayed(const Duration(seconds: 6), () {
+      if (!_disposed && _centersLoading) {
+        _centersLoading = false;
+        notifyListeners();
+      }
+    });
+
     _centersSub = _db.centersStream().listen(
       (list) {
         _centers = list;
@@ -146,6 +179,13 @@ class AppProvider extends ChangeNotifier {
     _bloodSupplySub?.cancel();
     _bloodSupplyLoading = true;
     notifyListeners();
+
+    Future.delayed(const Duration(seconds: 6), () {
+      if (!_disposed && _bloodSupplyLoading) {
+        _bloodSupplyLoading = false;
+        notifyListeners();
+      }
+    });
 
     _bloodSupplySub = _db.bloodSupplyStream().listen(
       (list) {
