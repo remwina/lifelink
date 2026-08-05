@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/transitions.dart';
 import '../../models/user_profile.dart';
 import '../../providers/app_provider.dart';
 import '../../widgets/blood_drop_icon.dart';
@@ -92,42 +93,8 @@ class HomeScreen extends StatelessWidget {
                     ),
                 ],
               ),
-              // Pulse alert dot
-              GestureDetector(
-                onTap: provider.showPulseAlert,
-                child: Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'PULSE',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // Animated PULSE alert button
+              const _PulseButton(),
             ],
           ),
 
@@ -137,98 +104,237 @@ class HomeScreen extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // ── Greeting ────────────────────────────────────────────────
-                Text(
-                  _greeting(),
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        user.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 26,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        user.bloodType,
+                StaggeredFadeSlide(
+                  delay: const Duration(milliseconds: 60),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _greeting(),
                         style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              user.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.dmSerifDisplay(
+                                fontSize: 26,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              user.bloodType,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // ── Critical alert for user's blood type ────────────────────
                 if (myTypeIsLow) ...[
-                  _CriticalBloodAlert(
-                    bloodType: user.bloodType,
-                    percentage: myLevel!.percentage,
-                    onBook: () => provider.setIndex(2),
+                  StaggeredFadeSlide(
+                    delay: const Duration(milliseconds: 120),
+                    child: _CriticalBloodAlert(
+                      bloodType: user.bloodType,
+                      percentage: myLevel!.percentage,
+                      onBook: () => provider.setIndex(2),
+                    ),
                   ),
                   const SizedBox(height: 14),
                 ],
 
                 // ── Eligibility card ─────────────────────────────────────────
-                EligibilityCard(
-                  user: user,
-                  onBookNow: () => provider.setIndex(2),
+                StaggeredFadeSlide(
+                  delay: const Duration(milliseconds: 160),
+                  child: EligibilityCard(
+                    user: user,
+                    onBookNow: () => provider.setIndex(2),
+                  ),
                 ),
                 const SizedBox(height: 14),
 
                 // ── Quick actions ────────────────────────────────────────────
-                _QuickActionsRow(
-                  onBook: () => provider.setIndex(2),
-                  onMap: () => provider.setIndex(3),
-                  onHistory: () => provider.setIndex(4),
+                StaggeredFadeSlide(
+                  delay: const Duration(milliseconds: 210),
+                  child: _QuickActionsRow(
+                    onBook: () => provider.setIndex(2),
+                    onMap: () => provider.setIndex(3),
+                    onHistory: () => provider.setIndex(4),
+                  ),
                 ),
                 const SizedBox(height: 14),
 
                 // ── Upcoming appointment ─────────────────────────────────────
                 if (nextAppointment != null) ...[
-                  _UpcomingAppointmentCard(appointment: nextAppointment),
+                  StaggeredFadeSlide(
+                    delay: const Duration(milliseconds: 250),
+                    child: _UpcomingAppointmentCard(
+                        appointment: nextAppointment),
+                  ),
                   const SizedBox(height: 14),
                 ],
 
                 // ── Blood supply ─────────────────────────────────────────────
-                BloodSupplyGridWidget(highlightType: user.bloodType),
+                StaggeredFadeSlide(
+                  delay: const Duration(milliseconds: 300),
+                  child: BloodSupplyGridWidget(highlightType: user.bloodType),
+                ),
                 const SizedBox(height: 14),
 
                 // ── Impact ───────────────────────────────────────────────────
-                ImpactCard(user: user),
+                StaggeredFadeSlide(
+                  delay: const Duration(milliseconds: 350),
+                  child: ImpactCard(user: user),
+                ),
                 const SizedBox(height: 14),
 
                 // ── Nearby centers ───────────────────────────────────────────
-                NearbyCentersCard(
-                  onBook: (center) {
-                    provider.selectCenter(center);
-                    provider.setIndex(2);
-                  },
+                StaggeredFadeSlide(
+                  delay: const Duration(milliseconds: 400),
+                  child: NearbyCentersCard(
+                    onBook: (center) {
+                      provider.selectCenter(center);
+                      provider.setIndex(2);
+                    },
+                  ),
                 ),
               ]),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Pulsing PULSE button ──────────────────────────────────────────────────────
+class _PulseButton extends StatefulWidget {
+  const _PulseButton();
+
+  @override
+  State<_PulseButton> createState() => _PulseButtonState();
+}
+
+class _PulseButtonState extends State<_PulseButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _pulseScale;
+  late Animation<double> _pulseOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _pulseScale = Tween<double>(begin: 1.0, end: 1.18).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    _pulseOpacity = Tween<double>(begin: 0.6, end: 0.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.read<AppProvider>();
+    return GestureDetector(
+      onTap: provider.showPulseAlert,
+      child: Container(
+        margin: const EdgeInsets.only(right: 16),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Ripple ring behind the button
+            AnimatedBuilder(
+              animation: _ctrl,
+              builder: (_, __) => Transform.scale(
+                scale: _pulseScale.value,
+                child: Opacity(
+                  opacity: _pulseOpacity.value,
+                  child: Container(
+                    width: 70,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Actual pill button
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedBuilder(
+                    animation: _ctrl,
+                    builder: (_, __) => Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: Color.lerp(
+                          AppColors.primary,
+                          AppColors.primaryDark,
+                          _ctrl.value,
+                        )!,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'PULSE',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -376,8 +482,9 @@ class _QuickAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: TapScaleEffect(
         onTap: onTap,
+        scale: 0.92,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(

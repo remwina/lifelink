@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/transitions.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../widgets/blood_drop_icon.dart';
 import 'register_screen.dart';
@@ -13,17 +14,38 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   bool _resetSent = false;
 
+  late AnimationController _fadeCtrl;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic));
+    _fadeCtrl.forward();
+  }
+
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _fadeCtrl.dispose();
     super.dispose();
   }
 
@@ -85,7 +107,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: SlideTransition(
+            position: _slideAnim,
+            child: LayoutBuilder(
           builder: (context, constraints) {
             final maxW =
                 constraints.maxWidth > 480 ? 480.0 : constraints.maxWidth;
@@ -268,8 +294,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               GestureDetector(
                                 onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const RegisterScreen(),
+                                  SlideUpPageRoute(
+                                    page: const RegisterScreen(),
                                   ),
                                 ),
                                 child: Text(
@@ -291,6 +317,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             );
           },
+        ),
+          ),
         ),
       ),
     );
