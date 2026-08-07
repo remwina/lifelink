@@ -131,6 +131,20 @@ class AppProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
+  Future<void> refreshNotifications(String uid) async {
+    final items = await _db.getNotifications(uid);
+    _notifications = items;
+    notifyListeners();
+  }
+
+  Future<void> markNotificationRead(String uid, String notificationId) async {
+    await _db.markNotificationRead(uid, notificationId);
+  }
+
+  Future<void> deleteNotification(String uid, String notificationId) async {
+    await _db.deleteNotification(uid, notificationId);
+  }
+
   // ── Donation centers ───────────────────────────────────────────────────────
   List<DonationCenter> _centers = [];
   List<DonationCenter> get centers => _centers;

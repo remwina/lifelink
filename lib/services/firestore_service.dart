@@ -138,6 +138,21 @@ class FirestoreService {
             snap.docs.map(NotificationItem.fromFirestore).toList());
   }
 
+  Future<List<NotificationItem>> getNotifications(String uid) async {
+    final snap = await _notificationsFor(uid)
+        .orderBy('createdAt', descending: true)
+        .get();
+    return snap.docs.map(NotificationItem.fromFirestore).toList();
+  }
+
+  Future<void> markNotificationRead(String uid, String notificationId) async {
+    await _notificationsFor(uid).doc(notificationId).update({'isRead': true});
+  }
+
+  Future<void> deleteNotification(String uid, String notificationId) async {
+    await _notificationsFor(uid).doc(notificationId).delete();
+  }
+
   Future<void> markAllNotificationsRead(String uid) async {
     final snap =
         await _notificationsFor(uid).where('isRead', isEqualTo: false).get();

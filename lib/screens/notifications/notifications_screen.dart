@@ -41,21 +41,115 @@ class NotificationsScreen extends StatelessWidget {
             ),
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-            16, 0, 16, 24 + MediaQuery.of(context).padding.bottom),
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        backgroundColor: AppColors.surface,
+        onRefresh: () => provider.refreshNotifications(uid),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(
+              16, 4, 16, 24 + MediaQuery.of(context).padding.bottom),
+          children: [
+            _AlertsHeader(unreadCount: unread.length),
+            if (notifications.isEmpty)
+              const _EmptyNotifications()
+            else ...[
+              if (unread.isNotEmpty) ...[
+                _GroupLabel(label: 'New · ${unread.length}'),
+                const SizedBox(height: 8),
+                ...unread.map((n) => _NotificationCard(item: n, uid: uid)),
+                const SizedBox(height: 16),
+              ],
+              if (read.isNotEmpty) ...[
+                _GroupLabel(label: 'Earlier'),
+                const SizedBox(height: 8),
+                ...read.map((n) => _NotificationCard(item: n, uid: uid)),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AlertsHeader extends StatelessWidget {
+  final int unreadCount;
+
+  const _AlertsHeader({required this.unreadCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFE3E5), Color(0xFFFFF4E8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
         children: [
-          if (unread.isNotEmpty) ...[
-            _GroupLabel(label: 'New · ${unread.length}'),
-            const SizedBox(height: 8),
-            ...unread.map((n) => _NotificationCard(item: n)),
-            const SizedBox(height: 16),
-          ],
-          if (read.isNotEmpty) ...[
-            _GroupLabel(label: 'Earlier'),
-            const SizedBox(height: 8),
-            ...read.map((n) => _NotificationCard(item: n)),
-          ],
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.75),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.favorite_rounded,
+                color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              unreadCount == 0
+                  ? 'You’re all caught up!'
+                  : 'You have $unreadCount little reminder${unreadCount == 1 ? '' : 's'}',
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          const Text('✨', style: TextStyle(fontSize: 22)),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyNotifications extends StatelessWidget {
+  const _EmptyNotifications();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 72, left: 24, right: 24),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryLight,
+              shape: BoxShape.circle,
+            ),
+            child: const Text('💌', style: TextStyle(fontSize: 42)),
+          ),
+          const SizedBox(height: 18),
+          Text('All quiet for now',
+              style: GoogleFonts.dmSans(
+                  fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          Text(
+            'We’ll keep an eye out and let you know when something lovely comes up.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+                fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+          ),
         ],
       ),
     );
@@ -86,8 +180,9 @@ class _GroupLabel extends StatelessWidget {
 
 class _NotificationCard extends StatelessWidget {
   final NotificationItem item;
+  final String uid;
 
-  const _NotificationCard({required this.item});
+  const _NotificationCard({required this.item, required this.uid});
 
   Color get _typeColor {
     switch (item.type) {
@@ -130,19 +225,42 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: item.isRead ? AppColors.surface : AppColors.primaryLight.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: item.isRead ? AppColors.border : AppColors.primary.withValues(alpha: 0.3),
+    return Dismissible(
+      key: ValueKey(item.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(right: 20),
+        alignment: Alignment.centerRight,
+        decoration: BoxDecoration(
+          color: AppColors.dangerLight,
+          borderRadius: BorderRadius.circular(18),
         ),
+        child: const Icon(Icons.delete_sweep_rounded, color: AppColors.danger),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      onDismissed: (_) => context.read<AppProvider>().deleteNotification(uid, item.id),
+      child: GestureDetector(
+        onTap: item.isRead
+            ? null
+            : () => context.read<AppProvider>().markNotificationRead(uid, item.id),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: item.isRead
+                ? AppColors.surface
+                : AppColors.primaryLight.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: item.isRead
+                  ? AppColors.border
+                  : AppColors.primary.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // Icon
           Container(
             width: 40,
@@ -224,7 +342,9 @@ class _NotificationCard extends StatelessWidget {
               ),
             ),
           ],
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
