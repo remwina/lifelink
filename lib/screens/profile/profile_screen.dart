@@ -5,6 +5,7 @@ import '../../core/theme.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../models/user_profile.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -19,7 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 3, vsync: this);
+    _tab = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -53,6 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             _HistoryTab(user: user),
             _ChallengesTab(user: user),
             _BadgesTab(user: user),
+            _CommunityTab(user: user),
           ],
         ),
       ),
@@ -76,8 +78,11 @@ class _ProfileHeader extends StatelessWidget {
       automaticallyImplyLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.logout_rounded,
-              color: AppColors.textMuted, size: 20),
+          icon: const Icon(
+            Icons.logout_rounded,
+            color: AppColors.textMuted,
+            size: 20,
+          ),
           tooltip: 'Sign out',
           onPressed: () async {
             final confirmed = await showDialog<bool>(
@@ -127,13 +132,18 @@ class _ProfileHeader extends StatelessWidget {
             indicatorColor: AppColors.primary,
             indicatorSize: TabBarIndicatorSize.label,
             labelStyle: GoogleFonts.dmSans(
-                fontSize: 13, fontWeight: FontWeight.w700),
-            unselectedLabelStyle:
-                GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500),
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+            unselectedLabelStyle: GoogleFonts.dmSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
             tabs: const [
               Tab(text: 'History'),
               Tab(text: 'Challenges'),
               Tab(text: 'Badges'),
+              Tab(text: 'Community'),
             ],
           ),
         ),
@@ -186,8 +196,11 @@ class _ProfileInfo extends StatelessWidget {
                     color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.edit_rounded,
-                      color: Colors.white, size: 13),
+                  child: const Icon(
+                    Icons.edit_rounded,
+                    color: Colors.white,
+                    size: 13,
+                  ),
                 ),
               ),
             ],
@@ -205,7 +218,10 @@ class _ProfileInfo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(20),
@@ -221,8 +237,10 @@ class _ProfileInfo extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF3E0),
                   borderRadius: BorderRadius.circular(20),
@@ -250,14 +268,11 @@ class _ProfileInfo extends StatelessWidget {
           // Stats row
           Row(
             children: [
-              _ProfileStat(
-                  value: '${user.donationsTotal}', label: 'Donations'),
+              _ProfileStat(value: '${user.donationsTotal}', label: 'Donations'),
               _ProfileDivider(),
-              _ProfileStat(
-                  value: '${user.livesHelped}', label: 'Lives helped'),
+              _ProfileStat(value: '${user.livesHelped}', label: 'Lives helped'),
               _ProfileDivider(),
-              _ProfileStat(
-                  value: '${user.bloodGivenL}L', label: 'Blood given'),
+              _ProfileStat(value: '${user.bloodGivenL}L', label: 'Blood given'),
             ],
           ),
         ],
@@ -300,11 +315,7 @@ class _ProfileStat extends StatelessWidget {
 class _ProfileDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 36,
-      width: 1,
-      color: AppColors.border,
-    );
+    return Container(height: 36, width: 1, color: AppColors.border);
   }
 }
 
@@ -318,10 +329,12 @@ class _HistoryTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 24 + MediaQuery.of(context).padding.bottom),
-      children: [
-        ...user.history.map((h) => _HistoryCard(history: h)),
-      ],
+        16,
+        12,
+        16,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      children: [...user.history.map((h) => _HistoryCard(history: h))],
     );
   }
 }
@@ -350,8 +363,11 @@ class _HistoryCard extends StatelessWidget {
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.water_drop_rounded,
-                color: AppColors.primary, size: 22),
+            child: const Icon(
+              Icons.water_drop_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -407,8 +423,14 @@ class _ChallengesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 24 + MediaQuery.of(context).padding.bottom),
-      children: user.challenges.map((c) => _ChallengeCard(challenge: c)).toList(),
+        16,
+        12,
+        16,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      children: user.challenges
+          .map((c) => _ChallengeCard(challenge: c))
+          .toList(),
     );
   }
 }
@@ -502,7 +524,11 @@ class _BadgesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 24 + MediaQuery.of(context).padding.bottom),
+        16,
+        12,
+        16,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         mainAxisSpacing: 12,
@@ -528,7 +554,9 @@ class _BadgeTile extends StatelessWidget {
         color: badge.earned ? AppColors.surface : AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: badge.earned ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
+          color: badge.earned
+              ? AppColors.primary.withValues(alpha: 0.3)
+              : AppColors.border,
         ),
       ),
       child: Column(
@@ -538,15 +566,28 @@ class _BadgeTile extends StatelessWidget {
             colorFilter: badge.earned
                 ? const ColorFilter.mode(Colors.transparent, BlendMode.multiply)
                 : const ColorFilter.matrix([
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0, 0, 0, 1, 0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
                   ]),
-            child: Text(
-              badge.emoji,
-              style: const TextStyle(fontSize: 32),
-            ),
+            child: Text(badge.emoji, style: const TextStyle(fontSize: 32)),
           ),
           const SizedBox(height: 6),
           Text(
@@ -568,6 +609,185 @@ class _BadgeTile extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CommunityTab extends StatelessWidget {
+  final UserProfile user;
+
+  const _CommunityTab({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final donors = [
+      _DemoDonor('Mia Santos', '🏆', 18),
+      _DemoDonor(user.name, '❤️', user.donationsTotal),
+      _DemoDonor('Noah Reyes', '🌟', 12),
+      _DemoDonor('Ava Cruz', '🩸', 9),
+      _DemoDonor('Liam Garcia', '✨', 7),
+    ]..sort((a, b) => b.donations.compareTo(a.donations));
+
+    final userRank = donors.indexWhere((donor) => donor.name == user.name) + 1;
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFE3E5), Color(0xFFFFF3D8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              const Text('🌈', style: TextStyle(fontSize: 30)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  userRank == 1
+                      ? 'You’re leading the kindness list!'
+                      : 'Every donation moves you up the kindness list.',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Text(
+              'Community heroes',
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'This year',
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ...donors.asMap().entries.map(
+          (entry) => _DonorRankCard(
+            rank: entry.key + 1,
+            donor: entry.value,
+            isCurrentUser: entry.value.name == user.name,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Demo rankings — connect your community to see real heroes here.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.dmSans(
+            fontSize: 10,
+            color: AppColors.textMuted,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DemoDonor {
+  final String name;
+  final String emoji;
+  final int donations;
+
+  const _DemoDonor(this.name, this.emoji, this.donations);
+}
+
+class _DonorRankCard extends StatelessWidget {
+  final int rank;
+  final _DemoDonor donor;
+  final bool isCurrentUser;
+
+  const _DonorRankCard({
+    required this.rank,
+    required this.donor,
+    required this.isCurrentUser,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isCurrentUser ? AppColors.primaryLight : AppColors.surface,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: isCurrentUser
+              ? AppColors.primary.withValues(alpha: 0.35)
+              : AppColors.border,
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: Text(
+              rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : '#$rank',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: rank <= 3 ? 18 : 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          CircleAvatar(
+            radius: 19,
+            backgroundColor: isCurrentUser
+                ? Colors.white
+                : AppColors.surfaceAlt,
+            child: Text(donor.emoji, style: const TextStyle(fontSize: 18)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              isCurrentUser ? '${donor.name} (you)' : donor.name,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          Text(
+            '${donor.donations} drops',
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isCurrentUser ? AppColors.primary : AppColors.textMuted,
+            ),
+          ),
         ],
       ),
     );
