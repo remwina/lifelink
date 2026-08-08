@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/blood_supply.dart';
 import '../models/booking.dart';
 import '../models/donation_center.dart';
@@ -7,6 +8,7 @@ import '../models/notification_item.dart';
 import '../models/user_profile.dart';
 import '../services/firestore_service.dart';
 import '../services/reminder_service.dart';
+
 class AppProvider extends ChangeNotifier {
   final bool demoMode;
   late final FirestoreService _db;
@@ -60,33 +62,43 @@ class AppProvider extends ChangeNotifier {
         debugPrint('AppProvider: userProfileStream timed out — using fallback');
         _userLoading = false;
         _user ??= UserProfile(
-            uid: uid, name: 'Donor', email: '', bloodType: '—');
+          uid: uid,
+          name: 'Donor',
+          email: '',
+          bloodType: '—',
+        );
         notifyListeners();
       }
     });
 
-    _userSub = _db.userProfileStream(uid).listen(
-      (profile) async {
-        if (profile == null) {
-          // Document doesn't exist yet — wait for it
-          return;
-        }
-        List<DonationHistory> history = [];
-        try {
-          history = await _db.getDonationHistory(uid);
-        } catch (_) {}
-        _user = profile.copyWith(history: history);
-        _userLoading = false;
-        notifyListeners();
-      },
-      onError: (Object error) {
-        debugPrint('AppProvider: userProfileStream error: $error');
-        _userLoading = false;
-        _user ??= UserProfile(
-            uid: uid, name: 'Donor', email: '', bloodType: '—');
-        notifyListeners();
-      },
-    );
+    _userSub = _db
+        .userProfileStream(uid)
+        .listen(
+          (profile) async {
+            if (profile == null) {
+              // Document doesn't exist yet — wait for it
+              return;
+            }
+            List<DonationHistory> history = [];
+            try {
+              history = await _db.getDonationHistory(uid);
+            } catch (_) {}
+            _user = profile.copyWith(history: history);
+            _userLoading = false;
+            notifyListeners();
+          },
+          onError: (Object error) {
+            debugPrint('AppProvider: userProfileStream error: $error');
+            _userLoading = false;
+            _user ??= UserProfile(
+              uid: uid,
+              name: 'Donor',
+              email: '',
+              bloodType: '—',
+            );
+            notifyListeners();
+          },
+        );
   }
 
   bool _disposed = false;
@@ -120,21 +132,24 @@ class AppProvider extends ChangeNotifier {
 
   void listenToNotifications(String uid) {
     _notifSub?.cancel();
-    _notifSub = _db.notificationsStream(uid).listen(
-      (items) {
-        _notifications = items;
-        notifyListeners();
-      },
-      onError: (Object error) {
-        debugPrint('AppProvider: notificationsStream error: $error');
-      },
-    );
+    _notifSub = _db
+        .notificationsStream(uid)
+        .listen(
+          (items) {
+            _notifications = items;
+            notifyListeners();
+          },
+          onError: (Object error) {
+            debugPrint('AppProvider: notificationsStream error: $error');
+          },
+        );
   }
 
   Future<void> markAllRead(String uid) async {
     if (demoMode) {
-      _notifications =
-          _notifications.map((n) => n.copyWith(isRead: true)).toList();
+      _notifications = _notifications
+          .map((n) => n.copyWith(isRead: true))
+          .toList();
       notifyListeners();
       return;
     }
@@ -163,8 +178,9 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> deleteNotification(String uid, String notificationId) async {
     if (demoMode) {
-      _notifications =
-          _notifications.where((n) => n.id != notificationId).toList();
+      _notifications = _notifications
+          .where((n) => n.id != notificationId)
+          .toList();
       notifyListeners();
       return;
     }
@@ -256,15 +272,17 @@ class AppProvider extends ChangeNotifier {
 
   void listenToAppointments(String uid) {
     _appointmentsSub?.cancel();
-    _appointmentsSub = _db.appointmentsStream(uid).listen(
-      (list) {
-        _appointments = list;
-        notifyListeners();
-      },
-      onError: (Object error) {
-        debugPrint('AppProvider: appointmentsStream error: $error');
-      },
-    );
+    _appointmentsSub = _db
+        .appointmentsStream(uid)
+        .listen(
+          (list) {
+            _appointments = list;
+            notifyListeners();
+          },
+          onError: (Object error) {
+            debugPrint('AppProvider: appointmentsStream error: $error');
+          },
+        );
   }
 
   // ── Session management ─────────────────────────────────────────────────────
@@ -513,11 +531,17 @@ class AppProvider extends ChangeNotifier {
       } else {
         _appointments = [appointment];
       }
-      await ReminderService.scheduleAppointmentReminder(
-        centerName: appointment.centerName,
-        date: appointment.date,
-        time: appointment.time,
-      );
+      try {
+        await ReminderService.scheduleAppointmentReminder(
+          centerName: appointment.centerName,
+          date: appointment.date,
+          time: appointment.time,
+        );
+      } on PlatformException catch (error) {
+        debugPrint('AppProvider: reminder unavailable: $error');
+      } on MissingPluginException catch (error) {
+        debugPrint('AppProvider: reminder plugin unavailable: $error');
+      }
       _bookingStep = 3;
     } catch (e) {
       _bookingError = 'Could not save appointment. Please try again.';
