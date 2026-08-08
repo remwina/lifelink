@@ -160,7 +160,7 @@ class HomeScreen extends StatelessWidget {
                     delay: const Duration(milliseconds: 120),
                     child: _CriticalBloodAlert(
                       bloodType: user.bloodType,
-                      percentage: myLevel!.percentage,
+                      percentage: myLevel.percentage,
                       onBook: () => provider.setIndex(2),
                     ),
                   ),
@@ -280,7 +280,7 @@ class _PulseButtonState extends State<_PulseButton>
             // Ripple ring behind the button
             AnimatedBuilder(
               animation: _ctrl,
-              builder: (_, __) => Transform.scale(
+              builder: (_, _) => Transform.scale(
                 scale: _pulseScale.value,
                 child: Opacity(
                   opacity: _pulseOpacity.value,
@@ -307,7 +307,7 @@ class _PulseButtonState extends State<_PulseButton>
                 children: [
                   AnimatedBuilder(
                     animation: _ctrl,
-                    builder: (_, __) => Container(
+                    builder: (_, _) => Container(
                       width: 7,
                       height: 7,
                       decoration: BoxDecoration(

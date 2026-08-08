@@ -12,7 +12,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
-    final uid = context.read<ap.AuthProvider>().firebaseUser?.uid ?? '';
+    final uid = context.read<ap.AuthProvider>().currentUid ?? '';
     final notifications = provider.notifications;
     final unread = notifications.where((n) => !n.isRead).toList();
     final read = notifications.where((n) => n.isRead).toList();

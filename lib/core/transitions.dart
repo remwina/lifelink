@@ -6,10 +6,10 @@ class SlideUpPageRoute<T> extends PageRouteBuilder<T> {
 
   SlideUpPageRoute({required this.page})
       : super(
-          pageBuilder: (_, __, ___) => page,
+          pageBuilder: (_, _, _) => page,
           transitionDuration: const Duration(milliseconds: 380),
           reverseTransitionDuration: const Duration(milliseconds: 300),
-          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+          transitionsBuilder: (_, animation, _, child) {
             final slide = Tween<Offset>(
               begin: const Offset(0, 1),
               end: Offset.zero,
@@ -38,10 +38,10 @@ class SlideRightPageRoute<T> extends PageRouteBuilder<T> {
 
   SlideRightPageRoute({required this.page})
       : super(
-          pageBuilder: (_, __, ___) => page,
+          pageBuilder: (_, _, _) => page,
           transitionDuration: const Duration(milliseconds: 320),
           reverseTransitionDuration: const Duration(milliseconds: 260),
-          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+          transitionsBuilder: (_, animation, _, child) {
             final slide = Tween<Offset>(
               begin: const Offset(1, 0),
               end: Offset.zero,

@@ -7,9 +7,6 @@ import '../../models/donation_center.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../services/firestore_service.dart';
 
-/// The single admin email allowed to access this screen.
-const String _adminEmail = 'admin@lifelink.app';
-
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
 

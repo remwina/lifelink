@@ -6,11 +6,14 @@ import 'core/theme.dart';
 import 'firebase_options.dart';
 import 'providers/app_provider.dart';
 import 'providers/auth_provider.dart' as ap;
+import 'services/reminder_service.dart';
 import 'screens/admin/admin_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'shell.dart';
 
 const String _adminEmail = 'admin@lifelink.app';
+// Set to false when Firebase is configured and ready for integration testing.
+const bool demoMode = true;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,9 +23,10 @@ Future<void> main() async {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
+  await ReminderService.initialize();
 
   bool firebaseReady = false;
-  if (DefaultFirebaseOptions.android.apiKey != 'YOUR_ANDROID_API_KEY') {
+  if (!demoMode && DefaultFirebaseOptions.android.apiKey != 'YOUR_ANDROID_API_KEY') {
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
@@ -35,25 +39,32 @@ Future<void> main() async {
     }
   }
 
-  runApp(LifeLinkApp(firebaseReady: firebaseReady));
+  runApp(LifeLinkApp(firebaseReady: firebaseReady, demoMode: demoMode));
 }
 
 class LifeLinkApp extends StatelessWidget {
   final bool firebaseReady;
-  const LifeLinkApp({super.key, required this.firebaseReady});
+  final bool demoMode;
+  const LifeLinkApp({
+    super.key,
+    required this.firebaseReady,
+    required this.demoMode,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ap.AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider(
+            create: (_) => ap.AuthProvider(demoMode: demoMode)),
+        ChangeNotifierProvider(
+            create: (_) => AppProvider(demoMode: demoMode)),
       ],
       child: MaterialApp(
         title: 'LifeLink',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
-        home: firebaseReady ? const _AuthGate() : const _SetupBanner(),
+        home: demoMode || firebaseReady ? const _AuthGate() : const _SetupBanner(),
       ),
     );
   }
@@ -89,7 +100,7 @@ class _AuthGateState extends State<_AuthGate> {
         );
 
       case ap.AuthStatus.authenticated:
-        final uid = authProvider.firebaseUser?.uid;
+        final uid = authProvider.currentUid;
         final email = authProvider.firebaseUser?.email ?? '';
         final isAdmin = email == _adminEmail;
 

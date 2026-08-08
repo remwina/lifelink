@@ -5,6 +5,7 @@ import '../../core/theme.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../models/user_profile.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -79,6 +80,18 @@ class _ProfileHeader extends StatelessWidget {
       actions: [
         IconButton(
           icon: const Icon(
+            Icons.qr_code_2_rounded,
+            color: AppColors.primary,
+            size: 23,
+          ),
+          tooltip: 'Donor QR card',
+          onPressed: () => showDialog<void>(
+            context: context,
+            builder: (_) => _DonorCardDialog(user: user),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(
             Icons.logout_rounded,
             color: AppColors.textMuted,
             size: 20,
@@ -146,6 +159,91 @@ class _ProfileHeader extends StatelessWidget {
               Tab(text: 'Community'),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DonorCardDialog extends StatelessWidget {
+  final UserProfile user;
+
+  const _DonorCardDialog({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(26),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🩸', style: TextStyle(fontSize: 30)),
+            const SizedBox(height: 4),
+            Text(
+              'LifeLink donor card',
+              style: GoogleFonts.dmSerifDisplay(
+                fontSize: 22,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Show this at a donation center',
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 18),
+            QrImageView(
+              data: 'lifelink://donor/${user.uid}',
+              version: QrVersions.auto,
+              size: 180,
+              eyeStyle: const QrEyeStyle(
+                eyeShape: QrEyeShape.square,
+                color: AppColors.primary,
+              ),
+              dataModuleStyle: const QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              user.name,
+              style: GoogleFonts.dmSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Blood type ${user.bloodType}',
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
         ),
       ),
     );

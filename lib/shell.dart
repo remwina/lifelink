@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
-import 'core/transitions.dart';
 import 'providers/app_provider.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/notifications/notifications_screen.dart';

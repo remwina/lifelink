@@ -6,8 +6,14 @@ import '../models/donation_center.dart';
 import '../models/notification_item.dart';
 import '../models/user_profile.dart';
 import '../services/firestore_service.dart';
+import '../services/reminder_service.dart';
 class AppProvider extends ChangeNotifier {
-  final FirestoreService _db = FirestoreService();
+  final bool demoMode;
+  late final FirestoreService _db;
+
+  AppProvider({this.demoMode = false}) {
+    if (!demoMode) _db = FirestoreService();
+  }
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   int _currentIndex = 0;
@@ -126,22 +132,42 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> markAllRead(String uid) async {
+    if (demoMode) {
+      _notifications =
+          _notifications.map((n) => n.copyWith(isRead: true)).toList();
+      notifyListeners();
+      return;
+    }
     try {
       await _db.markAllNotificationsRead(uid);
     } catch (_) {}
   }
 
   Future<void> refreshNotifications(String uid) async {
+    if (demoMode) return;
     final items = await _db.getNotifications(uid);
     _notifications = items;
     notifyListeners();
   }
 
   Future<void> markNotificationRead(String uid, String notificationId) async {
+    if (demoMode) {
+      _notifications = _notifications
+          .map((n) => n.id == notificationId ? n.copyWith(isRead: true) : n)
+          .toList();
+      notifyListeners();
+      return;
+    }
     await _db.markNotificationRead(uid, notificationId);
   }
 
   Future<void> deleteNotification(String uid, String notificationId) async {
+    if (demoMode) {
+      _notifications =
+          _notifications.where((n) => n.id != notificationId).toList();
+      notifyListeners();
+      return;
+    }
     await _db.deleteNotification(uid, notificationId);
   }
 
@@ -244,12 +270,104 @@ class AppProvider extends ChangeNotifier {
   // ── Session management ─────────────────────────────────────────────────────
 
   void startSession(String uid) {
+    if (demoMode) {
+      _loadDemoSession();
+      return;
+    }
     listenToUser(uid);
     listenToNotifications(uid);
     listenToCenters();
     listenToBloodSupply();
     listenToAppointments(uid);
     _seedIfNeeded();
+  }
+
+  void _loadDemoSession() {
+    _user = UserProfile(
+      uid: 'demo-donor',
+      name: 'Jamie Donor',
+      email: 'demo@lifelink.app',
+      bloodType: 'O+',
+      donationsTotal: 6,
+      livesHelped: 18,
+      bloodGivenL: 2.7,
+      streakCount: 4,
+      nextEligibleDate: 'Aug 22, 2026',
+      challenges: const [
+        Challenge(
+          title: 'First Drop',
+          description: 'Complete your first donation',
+          current: 1,
+          target: 1,
+          reward: '🩸 First Drop Badge',
+          completed: true,
+        ),
+        Challenge(
+          title: 'Frequent Donor',
+          description: 'Donate 5 times in a year',
+          current: 4,
+          target: 5,
+          reward: '🏆 Gold Badge',
+        ),
+      ],
+      badges: const [
+        DonorBadge(emoji: '🩸', label: 'First Drop', earned: true),
+        DonorBadge(emoji: '🔥', label: '4-Streak', earned: true),
+        DonorBadge(emoji: '⭐', label: '10 Donations', earned: false),
+        DonorBadge(emoji: '🏆', label: 'Life Saver', earned: false),
+      ],
+    );
+    _bloodSupply = const [
+      BloodSupplyEntry(type: 'A+', percentage: 72),
+      BloodSupplyEntry(type: 'A−', percentage: 34),
+      BloodSupplyEntry(type: 'B+', percentage: 58),
+      BloodSupplyEntry(type: 'B−', percentage: 21),
+      BloodSupplyEntry(type: 'AB+', percentage: 65),
+      BloodSupplyEntry(type: 'AB−', percentage: 18),
+      BloodSupplyEntry(type: 'O+', percentage: 47),
+      BloodSupplyEntry(type: 'O−', percentage: 8),
+    ];
+    _centers = const [
+      DonationCenter(
+        id: 'demo-pgh',
+        name: 'Philippine General Hospital',
+        address: 'Taft Ave, Ermita',
+        hours: 'Open until 8 PM',
+        distanceKm: 1.2,
+        slotStatus: SlotStatus.open,
+        lat: 14.5794,
+        lng: 120.9843,
+      ),
+      DonationCenter(
+        id: 'demo-red-cross',
+        name: 'Red Cross — Manila Chapter',
+        address: 'Port Area',
+        hours: 'Open until 5 PM',
+        distanceKm: 5.1,
+        slotStatus: SlotStatus.open,
+        lat: 14.5995,
+        lng: 120.9842,
+      ),
+    ];
+    _notifications = const [
+      NotificationItem(
+        id: 'demo-urgent',
+        type: NotificationType.urgent,
+        title: 'O+ supply needs you',
+        body: 'Your blood type is running low nearby. Every drop helps.',
+        timeAgo: 'now',
+        hasAction: true,
+        actionLabel: 'Book Now',
+      ),
+      NotificationItem(
+        id: 'demo-streak',
+        type: NotificationType.achievement,
+        title: 'You’re on a 4-donation streak!',
+        body: 'Keep your kindness streak glowing.',
+        timeAgo: '2h ago',
+      ),
+    ];
+    notifyListeners();
   }
 
   Future<void> _seedIfNeeded() async {
@@ -390,7 +508,16 @@ class AppProvider extends ChangeNotifier {
         date: dates[_selectedDateIndex],
         time: _selectedSlot!.time,
       );
-      await _db.createAppointment(appointment);
+      if (!demoMode) {
+        await _db.createAppointment(appointment);
+      } else {
+        _appointments = [appointment];
+      }
+      await ReminderService.scheduleAppointmentReminder(
+        centerName: appointment.centerName,
+        date: appointment.date,
+        time: appointment.time,
+      );
       _bookingStep = 3;
     } catch (e) {
       _bookingError = 'Could not save appointment. Please try again.';

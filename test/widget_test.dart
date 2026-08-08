@@ -11,7 +11,9 @@ import 'package:lifelink/main.dart';
 
 void main() {
   testWidgets('LifeLink renders its startup setup banner', (tester) async {
-    await tester.pumpWidget(const LifeLinkApp(firebaseReady: false));
+    await tester.pumpWidget(
+      const LifeLinkApp(firebaseReady: false, demoMode: false),
+    );
 
     expect(find.text('Firebase not configured'), findsOneWidget);
   });
