@@ -101,7 +101,7 @@ class _AuthGateState extends State<_AuthGate> {
 
       case ap.AuthStatus.authenticated:
         final uid = authProvider.currentUid;
-        final email = authProvider.firebaseUser?.email ?? '';
+        final email = authProvider.currentEmail ?? authProvider.firebaseUser?.email ?? '';
         final isAdmin = email == _adminEmail;
 
         // Only start a new session when the uid actually changes
@@ -112,7 +112,7 @@ class _AuthGateState extends State<_AuthGate> {
             if (!isAdmin && mounted) appProvider.startSession(uid);
           });
         }
-        return isAdmin ? const AdminScreen() : const AppShell();
+         return isAdmin ? AdminScreen(demoMode: demoMode) : const AppShell();
 
       case ap.AuthStatus.unauthenticated:
         // Only clear once when transitioning away from a session

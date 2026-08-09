@@ -1,14 +1,17 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../models/blood_supply.dart';
+import '../../models/booking.dart';
 import '../../models/donation_center.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../services/firestore_service.dart';
 
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key});
+  final bool demoMode;
+  const AdminScreen({super.key, this.demoMode = false});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -21,7 +24,7 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
+    _tab = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -96,14 +99,16 @@ class _AdminScreenState extends State<AdminScreen>
           tabs: const [
             Tab(text: 'Blood Supply'),
             Tab(text: 'Centers'),
+            Tab(text: 'Analytics'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tab,
-        children: const [
-          _BloodSupplyTab(),
-          _CentersTab(),
+        children: [
+          const _BloodSupplyTab(),
+          const _CentersTab(),
+          _AnalyticsTab(demoMode: widget.demoMode),
         ],
       ),
     );
@@ -742,6 +747,648 @@ class _CenterCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Analytics Tab ──────────────────────────────────────────────────────────────
+class _AnalyticsTab extends StatefulWidget {
+  final bool demoMode;
+  const _AnalyticsTab({this.demoMode = false});
+
+  @override
+  State<_AnalyticsTab> createState() => _AnalyticsTabState();
+}
+
+class _AnalyticsTabState extends State<_AnalyticsTab> {
+  List<Map<String, dynamic>> _users = [];
+  List<Appointment> _appointments = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    if (widget.demoMode) {
+      _loadDemoData();
+      return;
+    }
+    try {
+      final db = FirestoreService();
+      final userDocs = await db.getAllUsers();
+      final appointmentDocs = await db.getAllAppointments();
+      setState(() {
+        _users = userDocs.map((d) => d.data()).toList();
+        _appointments =
+            appointmentDocs.map((d) => Appointment.fromFirestore(d)).toList();
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to load analytics: ${e.toString()}'),
+          backgroundColor: AppColors.danger,
+        ));
+      }
+    }
+  }
+
+  void _loadDemoData() {
+    final now = DateTime.now();
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    final demoUsers = <Map<String, dynamic>>[
+      {'bloodType': 'O+'},
+      {'bloodType': 'A+'},
+      {'bloodType': 'B+'},
+      {'bloodType': 'O+'},
+      {'bloodType': 'AB+'},
+      {'bloodType': 'A+'},
+      {'bloodType': 'O−'},
+      {'bloodType': 'B+'},
+      {'bloodType': 'O+'},
+      {'bloodType': 'A−'},
+      {'bloodType': 'O+'},
+      {'bloodType': 'AB+'},
+    ];
+
+    final tomorrow = now.add(const Duration(days: 1));
+    final dayAfter = now.add(const Duration(days: 2));
+    final day3 = now.add(const Duration(days: 3));
+    final day4 = now.add(const Duration(days: 4));
+
+    String fmt(DateTime d) =>
+        '${dayNames[d.weekday - 1]}, ${monthNames[d.month - 1]} ${d.day}';
+
+    final demoAppointments = <Appointment>[
+      Appointment(
+        id: 'demo-1',
+        userId: 'u1',
+        centerName: 'Philippine General Hospital',
+        centerAddress: 'Taft Ave, Ermita',
+        centerId: 'demo-pgh',
+        date: fmt(tomorrow),
+        time: '9:00 AM',
+        status: AppointmentStatus.upcoming,
+        createdAt: now,
+      ),
+      Appointment(
+        id: 'demo-2',
+        userId: 'u2',
+        centerName: 'Red Cross — Manila Chapter',
+        centerAddress: 'Port Area',
+        centerId: 'demo-red-cross',
+        date: fmt(tomorrow),
+        time: '10:00 AM',
+        status: AppointmentStatus.upcoming,
+        createdAt: now,
+      ),
+      Appointment(
+        id: 'demo-3',
+        userId: 'u3',
+        centerName: "St. Luke's Medical Center",
+        centerAddress: 'E. Rodriguez Sr.',
+        centerId: 'demo-slmc',
+        date: fmt(dayAfter),
+        time: '8:00 AM',
+        status: AppointmentStatus.upcoming,
+        createdAt: now,
+      ),
+      Appointment(
+        id: 'demo-4',
+        userId: 'u1',
+        centerName: 'UST Hospital Blood Bank',
+        centerAddress: 'España Blvd, Sampaloc',
+        centerId: 'demo-ust',
+        date: fmt(day3),
+        time: '1:00 PM',
+        status: AppointmentStatus.completed,
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      Appointment(
+        id: 'demo-5',
+        userId: 'u4',
+        centerName: 'Philippine Red Cross HQ',
+        centerAddress: 'Bonifacio Dr, Port Area',
+        centerId: 'demo-prchq',
+        date: fmt(day4),
+        time: '2:00 PM',
+        status: AppointmentStatus.cancelled,
+        createdAt: now.subtract(const Duration(days: 2)),
+      ),
+      Appointment(
+        id: 'demo-6',
+        userId: 'u2',
+        centerName: 'Philippine General Hospital',
+        centerAddress: 'Taft Ave, Ermita',
+        centerId: 'demo-pgh',
+        date: fmt(dayAfter),
+        time: '11:00 AM',
+        status: AppointmentStatus.completed,
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+    ];
+
+    setState(() {
+      _users = demoUsers;
+      _appointments = demoAppointments;
+      _loading = false;
+    });
+  }
+
+  int get _totalUsers => _users.length;
+  int get _totalAppointments => _appointments.length;
+  int get _completedAppointments =>
+      _appointments.where((a) => a.status == AppointmentStatus.completed).length;
+
+  Map<AppointmentStatus, int> get _statusCounts {
+    final counts = <AppointmentStatus, int>{};
+    for (final appt in _appointments) {
+      counts[appt.status] = (counts[appt.status] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  List<_BarData> _getTrendBars() {
+    final now = DateTime.now();
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final bars = <_BarData>[];
+    for (var i = 0; i < 7; i++) {
+      final day = now.add(Duration(days: 1 + i));
+      final dateStr =
+          '${dayNames[day.weekday - 1]}, ${monthNames[day.month - 1]} ${day.day}';
+      final count = _appointments.where((a) => a.date == dateStr).length;
+      final label = i == 0 ? 'Tomorrow' : '${day.month}/${day.day}';
+      bars.add(_BarData(label, count.toDouble(), AppColors.primary));
+    }
+    return bars;
+  }
+
+  List<_BarData> _getBloodTypeBars() {
+    final counts = <String, int>{};
+    for (final user in _users) {
+      final bloodType = (user['bloodType'] as String?)?.trim();
+      if (bloodType == null || bloodType.isEmpty) continue;
+      counts[bloodType] = (counts[bloodType] ?? 0) + 1;
+    }
+    if (counts.isEmpty) return [];
+    final colors = <String, Color>{
+      'A+': AppColors.levelHigh,
+      'A-': AppColors.levelHigh,
+      'B+': AppColors.levelMid,
+      'B-': AppColors.levelMid,
+      'AB+': AppColors.accent,
+      'AB-': AppColors.accent,
+      'O+': AppColors.primary,
+      'O-': AppColors.danger,
+    };
+    return counts.entries
+        .map((e) => _BarData(e.key, e.value.toDouble(), colors[e.key]))
+        .toList();
+  }
+
+  List<_BarData> _getCenterBars() {
+    final counts = <String, int>{};
+    for (final appt in _appointments) {
+      final name = appt.centerName.trim();
+      if (name.isEmpty) continue;
+      counts[name] = (counts[name] ?? 0) + 1;
+    }
+    if (counts.isEmpty) return [];
+    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    return sorted
+        .take(5)
+        .map((e) => _BarData(e.key, e.value.toDouble(), AppColors.accent))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
+    final trendBars = _getTrendBars();
+    final bloodTypeBars = _getBloodTypeBars();
+    final centerBars = _getCenterBars();
+    final statusCounts = _statusCounts;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Summary cards
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            children: [
+              _StatCard(
+                title: 'Total Users',
+                value: '$_totalUsers',
+                icon: Icons.people_rounded,
+                color: AppColors.primary,
+              ),
+              _StatCard(
+                title: 'Appointments',
+                value: '$_totalAppointments',
+                icon: Icons.calendar_month_rounded,
+                color: AppColors.accent,
+              ),
+              _StatCard(
+                title: 'Completed',
+                value: '$_completedAppointments',
+                icon: Icons.check_circle_rounded,
+                color: AppColors.success,
+              ),
+              _StatCard(
+                title: 'Active Centers',
+                value: '${centerBars.length}',
+                icon: Icons.local_hospital_rounded,
+                color: AppColors.warning,
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+
+          // Bookings Trend
+          _SectionHeader(title: 'Upcoming Bookings (Next 7 Days)'),
+          _VerticalBarChart(bars: trendBars),
+          const SizedBox(height: 28),
+
+          // Blood Type Distribution
+          _SectionHeader(title: 'Blood Type Distribution'),
+          _HorizontalBarChart(bars: bloodTypeBars),
+          const SizedBox(height: 28),
+
+          // Center Performance
+          _SectionHeader(title: 'Top Centers'),
+          _HorizontalBarChart(bars: centerBars),
+          const SizedBox(height: 28),
+
+          // Appointment Status
+          _SectionHeader(title: 'Appointment Status'),
+          _StatusBar(statusCounts: statusCounts),
+          const SizedBox(height: 28),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: GoogleFonts.dmSerifDisplay(
+              fontSize: 28,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: GoogleFonts.dmSans(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: GoogleFonts.dmSans(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+        ),
+      ),
+    );
+  }
+}
+
+class _BarData {
+  final String label;
+  final double value;
+  final Color? color;
+  const _BarData(this.label, this.value, [this.color]);
+}
+
+class _VerticalBarChart extends StatelessWidget {
+  final List<_BarData> bars;
+  const _VerticalBarChart({required this.bars});
+
+  @override
+  Widget build(BuildContext context) {
+    if (bars.isEmpty) {
+      return Text('No data available',
+          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+    }
+    final maxVal = bars.map((b) => b.value).reduce(math.max);
+    if (maxVal == 0) {
+      return Text('No bookings yet',
+          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final barSpacing = 8.0;
+        final barWidth =
+            (constraints.maxWidth - barSpacing * (bars.length - 1)) / bars.length;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: bars.map((bar) {
+            final height = (bar.value / maxVal) * 120;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: barSpacing / 2),
+                child: Column(
+                  children: [
+                    Text(
+                      bar.value.toInt().toString(),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: barWidth,
+                      height: height,
+                      decoration: BoxDecoration(
+                        color: bar.color ?? AppColors.primary,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      bar.label,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        color: AppColors.textMuted,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}
+
+class _HorizontalBarChart extends StatelessWidget {
+  final List<_BarData> bars;
+  const _HorizontalBarChart({required this.bars});
+
+  @override
+  Widget build(BuildContext context) {
+    if (bars.isEmpty) {
+      return Text('No data available',
+          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+    }
+    final maxVal = bars.map((b) => b.value).reduce(math.max);
+    if (maxVal == 0) {
+      return Text('No data available',
+          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+    }
+
+    return Column(
+      children: bars.map((bar) {
+        final fraction = bar.value / maxVal;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(
+                  bar.label,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Stack(
+                  children: [
+                    Container(
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: AppColors.levelBg,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    FractionallySizedBox(
+                      widthFactor: fraction,
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: bar.color ?? AppColors.primary,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 30,
+                child: Text(
+                  bar.value.toInt().toString(),
+                  textAlign: TextAlign.end,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _StatusBar extends StatelessWidget {
+  final Map<AppointmentStatus, int> statusCounts;
+  const _StatusBar({required this.statusCounts});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = statusCounts.values.fold(0, (a, b) => a + b);
+    if (total == 0) {
+      return Text('No appointments yet',
+          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+    }
+
+    final upcoming = (statusCounts[AppointmentStatus.upcoming] ?? 0) / total;
+    final completed = (statusCounts[AppointmentStatus.completed] ?? 0) / total;
+    final cancelled = (statusCounts[AppointmentStatus.cancelled] ?? 0) / total;
+
+    return Column(
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return Row(
+              children: [
+                if (upcoming > 0)
+                  Expanded(
+                    flex: (upcoming * 100).round(),
+                    child: Container(
+                      height: 24,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                if (completed > 0)
+                  Expanded(
+                    flex: (completed * 100).round(),
+                    child: Container(
+                      height: 24,
+                      color: AppColors.success,
+                    ),
+                  ),
+                if (cancelled > 0)
+                  Expanded(
+                    flex: (cancelled * 100).round(),
+                    child: Container(
+                      height: 24,
+                      color: AppColors.danger,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _LegendDot(
+              color: AppColors.primary,
+              label: 'Upcoming',
+              count: statusCounts[AppointmentStatus.upcoming] ?? 0,
+            ),
+            _LegendDot(
+              color: AppColors.success,
+              label: 'Completed',
+              count: statusCounts[AppointmentStatus.completed] ?? 0,
+            ),
+            _LegendDot(
+              color: AppColors.danger,
+              label: 'Cancelled',
+              count: statusCounts[AppointmentStatus.cancelled] ?? 0,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  final Color color;
+  final String label;
+  final int count;
+
+  const _LegendDot({
+    required this.color,
+    required this.label,
+    required this.count,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '$label ($count)',
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

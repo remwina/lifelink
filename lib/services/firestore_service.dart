@@ -185,6 +185,20 @@ class FirestoreService {
         (snap) => snap.docs.map(BloodSupplyEntry.fromFirestore).toList());
   }
 
+  // ── Admin analytics ─────────────────────────────────────────────────────────
+
+  /// One-time fetch of all user documents.
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getAllUsers() async {
+    final snap = await _users.get();
+    return snap.docs;
+  }
+
+  /// One-time fetch of all appointment documents.
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getAllAppointments() async {
+    final snap = await _appointments.get();
+    return snap.docs;
+  }
+
   // ── One-time seeding ───────────────────────────────────────────────────────
 
   /// Writes centers to Firestore if the collection is empty.

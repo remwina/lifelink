@@ -23,6 +23,9 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  String? _currentEmail;
+  String? get currentEmail => _currentEmail;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -50,6 +53,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> signIn({required String email, required String password}) async {
     if (demoMode) {
+      _currentEmail = email.trim();
       _status = AuthStatus.authenticated;
       _errorMessage = null;
       notifyListeners();
@@ -77,6 +81,7 @@ class AuthProvider extends ChangeNotifier {
     required String bloodType,
   }) async {
     if (demoMode) {
+      _currentEmail = email.trim();
       _status = AuthStatus.authenticated;
       _errorMessage = null;
       notifyListeners();
@@ -117,6 +122,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> signOut() async {
     if (demoMode) {
+      _currentEmail = null;
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return;
