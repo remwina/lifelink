@@ -106,8 +106,8 @@ class _AdminScreenState extends State<AdminScreen>
       body: TabBarView(
         controller: _tab,
         children: [
-          const _BloodSupplyTab(),
-          const _CentersTab(),
+          _BloodSupplyTab(demoMode: widget.demoMode),
+          _CentersTab(demoMode: widget.demoMode),
           _AnalyticsTab(demoMode: widget.demoMode),
         ],
       ),
@@ -117,15 +117,15 @@ class _AdminScreenState extends State<AdminScreen>
 
 // ── Blood Supply Tab ──────────────────────────────────────────────────────────
 class _BloodSupplyTab extends StatefulWidget {
-  const _BloodSupplyTab();
+  final bool demoMode;
+  const _BloodSupplyTab({this.demoMode = false});
 
   @override
   State<_BloodSupplyTab> createState() => _BloodSupplyTabState();
 }
 
 class _BloodSupplyTabState extends State<_BloodSupplyTab> {
-  final _db = FirestoreService();
-  List<BloodSupplyEntry> _entries = [];
+  List<BloodSupplyEntry> _entries = const [];
   bool _loading = true;
 
   @override
@@ -136,9 +136,13 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
+    if (widget.demoMode) {
+      _loadDemoData();
+      return;
+    }
     try {
-      final snap =
-          await _db.bloodSupplyCollection.orderBy('type').get();
+      final db = FirestoreService();
+      final snap = await db.bloodSupplyCollection.orderBy('type').get();
       setState(() {
         _entries =
             snap.docs.map(BloodSupplyEntry.fromFirestore).toList();
@@ -148,16 +152,50 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
       setState(() => _loading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to load: $e'),
+          content: Text('Failed to load: ${e.toString()}'),
           backgroundColor: AppColors.danger,
         ));
       }
     }
   }
 
+  void _loadDemoData() {
+    setState(() {
+      _entries = const [
+        BloodSupplyEntry(type: 'A+', percentage: 72),
+        BloodSupplyEntry(type: 'A−', percentage: 34),
+        BloodSupplyEntry(type: 'B+', percentage: 58),
+        BloodSupplyEntry(type: 'B−', percentage: 21),
+        BloodSupplyEntry(type: 'AB+', percentage: 65),
+        BloodSupplyEntry(type: 'AB−', percentage: 18),
+        BloodSupplyEntry(type: 'O+', percentage: 47),
+        BloodSupplyEntry(type: 'O−', percentage: 8),
+      ];
+      _loading = false;
+    });
+  }
+
   Future<void> _update(BloodSupplyEntry entry, int newPct) async {
+    if (widget.demoMode) {
+      setState(() {
+        _entries = _entries
+            .map((e) => e.type == entry.type
+                ? BloodSupplyEntry(type: e.type, percentage: newPct)
+                : e)
+            .toList();
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${entry.type} updated to $newPct% (demo)'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ));
+      }
+      return;
+    }
     try {
-      await _db.bloodSupplyCollection
+      final db = FirestoreService();
+      await db.bloodSupplyCollection
           .doc(entry.type)
           .update({'percentage': newPct});
       if (mounted) {
@@ -172,7 +210,7 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Update failed: $e'),
+          content: Text('Update failed: ${e.toString()}'),
           backgroundColor: AppColors.danger,
         ));
       }
@@ -426,15 +464,15 @@ class _StatusChip extends StatelessWidget {
 
 // ── Centers Tab ───────────────────────────────────────────────────────────────
 class _CentersTab extends StatefulWidget {
-  const _CentersTab();
+  final bool demoMode;
+  const _CentersTab({this.demoMode = false});
 
   @override
   State<_CentersTab> createState() => _CentersTabState();
 }
 
 class _CentersTabState extends State<_CentersTab> {
-  final _db = FirestoreService();
-  List<_CenterEntry> _entries = [];
+  List<_CenterEntry> _entries = const [];
   bool _loading = true;
 
   @override
@@ -445,9 +483,13 @@ class _CentersTabState extends State<_CentersTab> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
+    if (widget.demoMode) {
+      _loadDemoData();
+      return;
+    }
     try {
-      final snap =
-          await _db.centersCollection.orderBy('distanceKm').get();
+      final db = FirestoreService();
+      final snap = await db.centersCollection.orderBy('distanceKm').get();
       setState(() {
         _entries = snap.docs.map((doc) {
           final c = DonationCenter.fromFirestore(doc);
@@ -459,16 +501,119 @@ class _CentersTabState extends State<_CentersTab> {
       setState(() => _loading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to load: $e'),
+          content: Text('Failed to load: ${e.toString()}'),
           backgroundColor: AppColors.danger,
         ));
       }
     }
   }
 
+  void _loadDemoData() {
+    setState(() {
+      _entries = [
+        _CenterEntry(
+          id: 'demo-pgh',
+          center: DonationCenter(
+            id: 'demo-pgh',
+            name: 'Philippine General Hospital',
+            address: 'Taft Ave, Ermita',
+            hours: 'Open until 8 PM',
+            distanceKm: 1.2,
+            slotStatus: SlotStatus.open,
+            lat: 14.5794,
+            lng: 120.9843,
+          ),
+        ),
+        _CenterEntry(
+          id: 'demo-slmc',
+          center: DonationCenter(
+            id: 'demo-slmc',
+            name: "St. Luke's Medical Center",
+            address: 'E. Rodriguez Sr.',
+            hours: 'Open until 6 PM',
+            distanceKm: 3.8,
+            slotStatus: SlotStatus.limited,
+            lat: 14.6196,
+            lng: 121.0090,
+          ),
+        ),
+        _CenterEntry(
+          id: 'demo-red-cross',
+          center: DonationCenter(
+            id: 'demo-red-cross',
+            name: 'Red Cross — Manila Chapter',
+            address: 'Port Area',
+            hours: 'Open until 5 PM',
+            distanceKm: 5.1,
+            slotStatus: SlotStatus.open,
+            lat: 14.5876,
+            lng: 120.9739,
+          ),
+        ),
+        _CenterEntry(
+          id: 'demo-ust',
+          center: DonationCenter(
+            id: 'demo-ust',
+            name: 'UST Hospital Blood Bank',
+            address: 'España Blvd, Sampaloc',
+            hours: 'Open until 7 PM',
+            distanceKm: 2.4,
+            slotStatus: SlotStatus.open,
+            lat: 14.6110,
+            lng: 120.9894,
+          ),
+        ),
+        _CenterEntry(
+          id: 'demo-prchq',
+          center: DonationCenter(
+            id: 'demo-prchq',
+            name: 'Philippine Red Cross HQ',
+            address: 'Bonifacio Dr, Port Area',
+            hours: 'Open until 6 PM',
+            distanceKm: 4.7,
+            slotStatus: SlotStatus.limited,
+            lat: 14.5878,
+            lng: 120.9738,
+          ),
+        ),
+      ];
+      _loading = false;
+    });
+  }
+
   Future<void> _updateSlot(String docId, SlotStatus status) async {
+    if (widget.demoMode) {
+      setState(() {
+        _entries = _entries
+            .map((e) => e.id == docId
+                ? _CenterEntry(
+                    id: e.id,
+                    center: DonationCenter(
+                      id: e.center.id,
+                      name: e.center.name,
+                      address: e.center.address,
+                      hours: e.center.hours,
+                      distanceKm: e.center.distanceKm,
+                      slotStatus: status,
+                      lat: e.center.lat,
+                      lng: e.center.lng,
+                    ),
+                  )
+                : e)
+            .toList();
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Slot status updated to ${status.name} (demo)'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ));
+      }
+      return;
+    }
     try {
-      await _db.centersCollection
+      final db = FirestoreService();
+      await db.centersCollection
           .doc(docId)
           .update({'slotStatus': status.name});
       if (mounted) {
@@ -482,7 +627,7 @@ class _CentersTabState extends State<_CentersTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Update failed: $e'),
+          content: Text('Update failed: ${e.toString()}'),
           backgroundColor: AppColors.danger,
         ));
       }
@@ -490,8 +635,38 @@ class _CentersTabState extends State<_CentersTab> {
   }
 
   Future<void> _updateHours(String docId, String hours) async {
+    if (widget.demoMode) {
+      setState(() {
+        _entries = _entries
+            .map((e) => e.id == docId
+                ? _CenterEntry(
+                    id: e.id,
+                    center: DonationCenter(
+                      id: e.center.id,
+                      name: e.center.name,
+                      address: e.center.address,
+                      hours: hours,
+                      distanceKm: e.center.distanceKm,
+                      slotStatus: e.center.slotStatus,
+                      lat: e.center.lat,
+                      lng: e.center.lng,
+                    ),
+                  )
+                : e)
+            .toList();
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Hours updated (demo)'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
+        ));
+      }
+      return;
+    }
     try {
-      await _db.centersCollection.doc(docId).update({'hours': hours});
+      final db = FirestoreService();
+      await db.centersCollection.doc(docId).update({'hours': hours});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Hours updated'),
@@ -503,7 +678,7 @@ class _CentersTabState extends State<_CentersTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Update failed: $e'),
+          content: Text('Update failed: ${e.toString()}'),
           backgroundColor: AppColors.danger,
         ));
       }
