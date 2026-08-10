@@ -8,6 +8,7 @@ import '../../models/booking.dart';
 import '../../models/donation_center.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../services/firestore_service.dart';
+import '../../data/admin_demo_data.dart';
 
 class AdminScreen extends StatefulWidget {
   final bool demoMode;
@@ -127,6 +128,7 @@ class _BloodSupplyTab extends StatefulWidget {
 class _BloodSupplyTabState extends State<_BloodSupplyTab> {
   List<BloodSupplyEntry> _entries = const [];
   bool _loading = true;
+  DateTime? _lastUpdated;
 
   @override
   void initState() {
@@ -134,8 +136,8 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
     _load();
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _load({bool showLoading = true}) async {
+    if (showLoading) setState(() => _loading = true);
     if (widget.demoMode) {
       _loadDemoData();
       return;
@@ -143,36 +145,40 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
     try {
       final db = FirestoreService();
       final snap = await db.bloodSupplyCollection.orderBy('type').get();
+      if (!mounted) return;
       setState(() {
         _entries =
             snap.docs.map(BloodSupplyEntry.fromFirestore).toList();
         _loading = false;
+        _lastUpdated = DateTime.now();
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to load: ${e.toString()}'),
-          backgroundColor: AppColors.danger,
-        ));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to load: ${e.toString()}'),
+        backgroundColor: AppColors.danger,
+      ));
     }
   }
 
   void _loadDemoData() {
     setState(() {
-      _entries = const [
-        BloodSupplyEntry(type: 'A+', percentage: 72),
-        BloodSupplyEntry(type: 'A−', percentage: 34),
-        BloodSupplyEntry(type: 'B+', percentage: 58),
-        BloodSupplyEntry(type: 'B−', percentage: 21),
-        BloodSupplyEntry(type: 'AB+', percentage: 65),
-        BloodSupplyEntry(type: 'AB−', percentage: 18),
-        BloodSupplyEntry(type: 'O+', percentage: 47),
-        BloodSupplyEntry(type: 'O−', percentage: 8),
-      ];
+      _entries = demoBloodSupply;
       _loading = false;
+      _lastUpdated = DateTime.now();
     });
+  }
+
+  Future<void> _refresh() async => _load(showLoading: false);
+
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inSeconds < 5) return 'just now';
+    if (diff.inMinutes < 1) return '${diff.inSeconds}s ago';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    return '${diff.inHours}h ago';
   }
 
   Future<void> _update(BloodSupplyEntry entry, int newPct) async {
@@ -225,37 +231,59 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.warningLight,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFFFCC80)),
-          ),
-          child: Row(
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: AppColors.primary,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.info_outline_rounded,
-                  color: AppColors.warning, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Tap any blood type to edit its supply level.',
-                  style: GoogleFonts.dmSans(
-                      fontSize: 13, color: AppColors.warning),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warningLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFFCC80)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded,
+                        color: AppColors.warning, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Tap any blood type to edit its supply level.',
+                        style: GoogleFonts.dmSans(
+                            fontSize: 13, color: AppColors.warning),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        ..._entries.map((e) => _BloodSupplyRow(
-              entry: e,
-              onEdit: (pct) => _update(e, pct),
-            )),
-      ],
+          const SizedBox(height: 16),
+          ..._entries.map((e) => _BloodSupplyRow(
+                entry: e,
+                onEdit: (pct) => _update(e, pct),
+              )),
+          const SizedBox(height: 12),
+          if (_lastUpdated != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'Updated ${_formatTime(_lastUpdated!)}',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -474,6 +502,7 @@ class _CentersTab extends StatefulWidget {
 class _CentersTabState extends State<_CentersTab> {
   List<_CenterEntry> _entries = const [];
   bool _loading = true;
+  DateTime? _lastUpdated;
 
   @override
   void initState() {
@@ -481,8 +510,8 @@ class _CentersTabState extends State<_CentersTab> {
     _load();
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _load({bool showLoading = true}) async {
+    if (showLoading) setState(() => _loading = true);
     if (widget.demoMode) {
       _loadDemoData();
       return;
@@ -490,95 +519,42 @@ class _CentersTabState extends State<_CentersTab> {
     try {
       final db = FirestoreService();
       final snap = await db.centersCollection.orderBy('distanceKm').get();
+      if (!mounted) return;
       setState(() {
         _entries = snap.docs.map((doc) {
           final c = DonationCenter.fromFirestore(doc);
           return _CenterEntry(id: doc.id, center: c);
         }).toList();
         _loading = false;
+        _lastUpdated = DateTime.now();
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to load: ${e.toString()}'),
-          backgroundColor: AppColors.danger,
-        ));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to load: ${e.toString()}'),
+        backgroundColor: AppColors.danger,
+      ));
     }
   }
 
   void _loadDemoData() {
     setState(() {
-      _entries = [
-        _CenterEntry(
-          id: 'demo-pgh',
-          center: DonationCenter(
-            id: 'demo-pgh',
-            name: 'Philippine General Hospital',
-            address: 'Taft Ave, Ermita',
-            hours: 'Open until 8 PM',
-            distanceKm: 1.2,
-            slotStatus: SlotStatus.open,
-            lat: 14.5794,
-            lng: 120.9843,
-          ),
-        ),
-        _CenterEntry(
-          id: 'demo-slmc',
-          center: DonationCenter(
-            id: 'demo-slmc',
-            name: "St. Luke's Medical Center",
-            address: 'E. Rodriguez Sr.',
-            hours: 'Open until 6 PM',
-            distanceKm: 3.8,
-            slotStatus: SlotStatus.limited,
-            lat: 14.6196,
-            lng: 121.0090,
-          ),
-        ),
-        _CenterEntry(
-          id: 'demo-red-cross',
-          center: DonationCenter(
-            id: 'demo-red-cross',
-            name: 'Red Cross — Manila Chapter',
-            address: 'Port Area',
-            hours: 'Open until 5 PM',
-            distanceKm: 5.1,
-            slotStatus: SlotStatus.open,
-            lat: 14.5876,
-            lng: 120.9739,
-          ),
-        ),
-        _CenterEntry(
-          id: 'demo-ust',
-          center: DonationCenter(
-            id: 'demo-ust',
-            name: 'UST Hospital Blood Bank',
-            address: 'España Blvd, Sampaloc',
-            hours: 'Open until 7 PM',
-            distanceKm: 2.4,
-            slotStatus: SlotStatus.open,
-            lat: 14.6110,
-            lng: 120.9894,
-          ),
-        ),
-        _CenterEntry(
-          id: 'demo-prchq',
-          center: DonationCenter(
-            id: 'demo-prchq',
-            name: 'Philippine Red Cross HQ',
-            address: 'Bonifacio Dr, Port Area',
-            hours: 'Open until 6 PM',
-            distanceKm: 4.7,
-            slotStatus: SlotStatus.limited,
-            lat: 14.5878,
-            lng: 120.9738,
-          ),
-        ),
-      ];
+      _entries = demoCenters.map((c) => _CenterEntry(id: c.id, center: c.toCenter())).toList();
       _loading = false;
+      _lastUpdated = DateTime.now();
     });
+  }
+
+  Future<void> _refresh() async => _load(showLoading: false);
+
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inSeconds < 5) return 'just now';
+    if (diff.inMinutes < 1) return '${diff.inSeconds}s ago';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    return '${diff.inHours}h ago';
   }
 
   Future<void> _updateSlot(String docId, SlotStatus status) async {
@@ -693,16 +669,59 @@ class _CentersTabState extends State<_CentersTab> {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: _entries
-          .map((e) => _CenterCard(
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: AppColors.primary,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          ..._entries.map((e) => _CenterCard(
                 entry: e,
-                onSlotChange: (s) => _updateSlot(e.id, s),
+                onSlotChange: (s) => _confirmSlotChange(e.id, e.center.slotStatus, s),
                 onHoursChange: (h) => _updateHours(e.id, h),
-              ))
-          .toList(),
+              )),
+          if (_lastUpdated != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'Updated ${_formatTime(_lastUpdated!)}',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
+  }
+
+  Future<void> _confirmSlotChange(String docId, SlotStatus current, SlotStatus next) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Change slot status?', style: GoogleFonts.dmSans(fontWeight: FontWeight.w700)),
+        content: Text(
+          '${_entries.firstWhere((e) => e.id == docId).center.name} will be marked as ${next.name[0].toUpperCase() + next.name.substring(1)}.',
+          style: GoogleFonts.dmSans(),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await _updateSlot(docId, next);
+    }
   }
 }
 
@@ -939,6 +958,8 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
   List<Map<String, dynamic>> _users = [];
   List<Appointment> _appointments = [];
   bool _loading = true;
+  DateTime? _lastUpdated;
+  _AnalyticsRange _range = _AnalyticsRange.next7Days;
 
   @override
   void initState() {
@@ -946,8 +967,8 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
     _load();
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _load({bool showLoading = true}) async {
+    if (showLoading) setState(() => _loading = true);
     if (widget.demoMode) {
       _loadDemoData();
       return;
@@ -956,144 +977,94 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
       final db = FirestoreService();
       final userDocs = await db.getAllUsers();
       final appointmentDocs = await db.getAllAppointments();
+      if (!mounted) return;
       setState(() {
         _users = userDocs.map((d) => d.data()).toList();
         _appointments =
             appointmentDocs.map((d) => Appointment.fromFirestore(d)).toList();
         _loading = false;
+        _lastUpdated = DateTime.now();
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to load analytics: ${e.toString()}'),
-          backgroundColor: AppColors.danger,
-        ));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to load analytics: ${e.toString()}'),
+        backgroundColor: AppColors.danger,
+      ));
     }
   }
 
   void _loadDemoData() {
-    final now = DateTime.now();
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const monthNames = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-
-    final demoUsers = <Map<String, dynamic>>[
-      {'bloodType': 'O+'},
-      {'bloodType': 'A+'},
-      {'bloodType': 'B+'},
-      {'bloodType': 'O+'},
-      {'bloodType': 'AB+'},
-      {'bloodType': 'A+'},
-      {'bloodType': 'O−'},
-      {'bloodType': 'B+'},
-      {'bloodType': 'O+'},
-      {'bloodType': 'A−'},
-      {'bloodType': 'O+'},
-      {'bloodType': 'AB+'},
-    ];
-
-    final tomorrow = now.add(const Duration(days: 1));
-    final dayAfter = now.add(const Duration(days: 2));
-    final day3 = now.add(const Duration(days: 3));
-    final day4 = now.add(const Duration(days: 4));
-
-    String fmt(DateTime d) =>
-        '${dayNames[d.weekday - 1]}, ${monthNames[d.month - 1]} ${d.day}';
-
-    final demoAppointments = <Appointment>[
-      Appointment(
-        id: 'demo-1',
-        userId: 'u1',
-        centerName: 'Philippine General Hospital',
-        centerAddress: 'Taft Ave, Ermita',
-        centerId: 'demo-pgh',
-        date: fmt(tomorrow),
-        time: '9:00 AM',
-        status: AppointmentStatus.upcoming,
-        createdAt: now,
-      ),
-      Appointment(
-        id: 'demo-2',
-        userId: 'u2',
-        centerName: 'Red Cross — Manila Chapter',
-        centerAddress: 'Port Area',
-        centerId: 'demo-red-cross',
-        date: fmt(tomorrow),
-        time: '10:00 AM',
-        status: AppointmentStatus.upcoming,
-        createdAt: now,
-      ),
-      Appointment(
-        id: 'demo-3',
-        userId: 'u3',
-        centerName: "St. Luke's Medical Center",
-        centerAddress: 'E. Rodriguez Sr.',
-        centerId: 'demo-slmc',
-        date: fmt(dayAfter),
-        time: '8:00 AM',
-        status: AppointmentStatus.upcoming,
-        createdAt: now,
-      ),
-      Appointment(
-        id: 'demo-4',
-        userId: 'u1',
-        centerName: 'UST Hospital Blood Bank',
-        centerAddress: 'España Blvd, Sampaloc',
-        centerId: 'demo-ust',
-        date: fmt(day3),
-        time: '1:00 PM',
-        status: AppointmentStatus.completed,
-        createdAt: now.subtract(const Duration(days: 1)),
-      ),
-      Appointment(
-        id: 'demo-5',
-        userId: 'u4',
-        centerName: 'Philippine Red Cross HQ',
-        centerAddress: 'Bonifacio Dr, Port Area',
-        centerId: 'demo-prchq',
-        date: fmt(day4),
-        time: '2:00 PM',
-        status: AppointmentStatus.cancelled,
-        createdAt: now.subtract(const Duration(days: 2)),
-      ),
-      Appointment(
-        id: 'demo-6',
-        userId: 'u2',
-        centerName: 'Philippine General Hospital',
-        centerAddress: 'Taft Ave, Ermita',
-        centerId: 'demo-pgh',
-        date: fmt(dayAfter),
-        time: '11:00 AM',
-        status: AppointmentStatus.completed,
-        createdAt: now.subtract(const Duration(days: 1)),
-      ),
-    ];
-
     setState(() {
       _users = demoUsers;
-      _appointments = demoAppointments;
+      _appointments = buildDemoAppointments(DateTime.now());
       _loading = false;
+      _lastUpdated = DateTime.now();
     });
   }
 
-  int get _totalUsers => _users.length;
-  int get _totalAppointments => _appointments.length;
-  int get _completedAppointments =>
-      _appointments.where((a) => a.status == AppointmentStatus.completed).length;
+  Future<void> _refresh() async => _load(showLoading: false);
 
-  Map<AppointmentStatus, int> get _statusCounts {
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inSeconds < 5) return 'just now';
+    if (diff.inMinutes < 1) return '${diff.inSeconds}s ago';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    return '${diff.inHours}h ago';
+  }
+
+  List<Appointment> get _filteredAppointments {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+
+    switch (_range) {
+      case _AnalyticsRange.next7Days:
+        final cutoff = now.add(const Duration(days: 7));
+        return _appointments.where((a) {
+          final parts = a.date.split(', ');
+          if (parts.length != 2) return false;
+          final dateStr = parts[1];
+          final monthStr = parts[0];
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          final month = monthNames.indexOf(monthStr) + 1;
+          if (month < 1) return false;
+          final dayMatch = RegExp(r'^\d+').firstMatch(dateStr);
+          if (dayMatch == null) return false;
+          final day = int.parse(dayMatch.group(0)!);
+          final year = now.year;
+          final apptDate = DateTime(year, month, day);
+          return apptDate.isAfter(startOfToday.subtract(const Duration(days: 1))) && apptDate.isBefore(cutoff.add(const Duration(days: 1)));
+        }).toList();
+      case _AnalyticsRange.thisMonth:
+        return _appointments.where((a) {
+          final parts = a.date.split(', ');
+          if (parts.length != 2) return false;
+          final dateStr = parts[1];
+          final monthStr = parts[0];
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          final month = monthNames.indexOf(monthStr) + 1;
+          if (month < 1) return false;
+          final dayMatch = RegExp(r'^\d+').firstMatch(dateStr);
+          if (dayMatch == null) return false;
+          final day = int.parse(dayMatch.group(0)!);
+          final year = now.year;
+          final apptDate = DateTime(year, month, day);
+          return apptDate.month == now.month && apptDate.year == now.year;
+        }).toList();
+    }
+  }
+
+  Map<AppointmentStatus, int> _getStatusCounts(List<Appointment> appts) {
     final counts = <AppointmentStatus, int>{};
-    for (final appt in _appointments) {
+    for (final appt in appts) {
       counts[appt.status] = (counts[appt.status] ?? 0) + 1;
     }
     return counts;
   }
 
-  List<_BarData> _getTrendBars() {
+  List<_BarData> _getTrendBars(List<Appointment> appts) {
     final now = DateTime.now();
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const monthNames = [
@@ -1105,8 +1076,8 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
       final day = now.add(Duration(days: 1 + i));
       final dateStr =
           '${dayNames[day.weekday - 1]}, ${monthNames[day.month - 1]} ${day.day}';
-      final count = _appointments.where((a) => a.date == dateStr).length;
-      final label = i == 0 ? 'Tomorrow' : '${day.month}/${day.day}';
+      final count = appts.where((a) => a.date == dateStr).length;
+      final label = i == 0 ? 'Tomorrow' : '${monthNames[day.month - 1]} ${day.day}';
       bars.add(_BarData(label, count.toDouble(), AppColors.primary));
     }
     return bars;
@@ -1135,9 +1106,9 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
         .toList();
   }
 
-  List<_BarData> _getCenterBars() {
+  List<_BarData> _getCenterBars(List<Appointment> appts) {
     final counts = <String, int>{};
-    for (final appt in _appointments) {
+    for (final appt in appts) {
       final name = appt.centerName.trim();
       if (name.isEmpty) continue;
       counts[name] = (counts[name] ?? 0) + 1;
@@ -1158,72 +1129,151 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
       );
     }
 
-    final trendBars = _getTrendBars();
+    final filtered = _filteredAppointments;
+    final trendBars = _getTrendBars(filtered);
     final bloodTypeBars = _getBloodTypeBars();
-    final centerBars = _getCenterBars();
-    final statusCounts = _statusCounts;
+    final centerBars = _getCenterBars(filtered);
+    final statusCounts = _getStatusCounts(filtered);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Summary cards
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            children: [
-              _StatCard(
-                title: 'Total Users',
-                value: '$_totalUsers',
-                icon: Icons.people_rounded,
-                color: AppColors.primary,
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: AppColors.primary,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Date range selector
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
               ),
-              _StatCard(
-                title: 'Appointments',
-                value: '$_totalAppointments',
-                icon: Icons.calendar_month_rounded,
-                color: AppColors.accent,
+              child: Row(
+                children: [
+                  Text('Range:', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                  const SizedBox(width: 8),
+                  _RangeChip(
+                    label: 'Next 7 Days',
+                    selected: _range == _AnalyticsRange.next7Days,
+                    onTap: () => setState(() => _range = _AnalyticsRange.next7Days),
+                  ),
+                  _RangeChip(
+                    label: 'This Month',
+                    selected: _range == _AnalyticsRange.thisMonth,
+                    onTap: () => setState(() => _range = _AnalyticsRange.thisMonth),
+                  ),
+                ],
               ),
-              _StatCard(
-                title: 'Completed',
-                value: '$_completedAppointments',
-                icon: Icons.check_circle_rounded,
-                color: AppColors.success,
+            ),
+            const SizedBox(height: 20),
+
+            // Summary cards
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              children: [
+                _StatCard(
+                  title: 'Total Users',
+                  value: '${_users.length}',
+                  icon: Icons.people_rounded,
+                  color: AppColors.primary,
+                ),
+                _StatCard(
+                  title: 'Appointments',
+                  value: '${filtered.length}',
+                  icon: Icons.calendar_month_rounded,
+                  color: AppColors.accent,
+                ),
+                _StatCard(
+                  title: 'Completed',
+                  value: '${statusCounts[AppointmentStatus.completed] ?? 0}',
+                  icon: Icons.check_circle_rounded,
+                  color: AppColors.success,
+                ),
+                _StatCard(
+                  title: 'Active Centers',
+                  value: '${centerBars.length}',
+                  icon: Icons.local_hospital_rounded,
+                  color: AppColors.warning,
+                ),
+              ],
+            ),
+            const SizedBox(height: 28),
+
+            // Bookings Trend
+            _SectionHeader(title: _range == _AnalyticsRange.next7Days ? 'Upcoming Bookings (Next 7 Days)' : 'Bookings This Month'),
+            _VerticalBarChart(bars: trendBars),
+            const SizedBox(height: 28),
+
+            // Blood Type Distribution
+            _SectionHeader(title: 'Blood Type Distribution'),
+            _HorizontalBarChart(bars: bloodTypeBars),
+            const SizedBox(height: 28),
+
+            // Center Performance
+            _SectionHeader(title: 'Top Centers'),
+            _HorizontalBarChart(bars: centerBars),
+            const SizedBox(height: 28),
+
+            // Appointment Status
+            _SectionHeader(title: 'Appointment Status'),
+            _StatusBar(statusCounts: statusCounts),
+            const SizedBox(height: 28),
+
+            if (_lastUpdated != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Updated ${_formatTime(_lastUpdated!)}',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                  ),
+                ),
               ),
-              _StatCard(
-                title: 'Active Centers',
-                value: '${centerBars.length}',
-                icon: Icons.local_hospital_rounded,
-                color: AppColors.warning,
-              ),
-            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+enum _AnalyticsRange { next7Days, thisMonth }
+
+class _RangeChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _RangeChip({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.dmSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: selected ? Colors.white : AppColors.textSecondary,
           ),
-          const SizedBox(height: 28),
-
-          // Bookings Trend
-          _SectionHeader(title: 'Upcoming Bookings (Next 7 Days)'),
-          _VerticalBarChart(bars: trendBars),
-          const SizedBox(height: 28),
-
-          // Blood Type Distribution
-          _SectionHeader(title: 'Blood Type Distribution'),
-          _HorizontalBarChart(bars: bloodTypeBars),
-          const SizedBox(height: 28),
-
-          // Center Performance
-          _SectionHeader(title: 'Top Centers'),
-          _HorizontalBarChart(bars: centerBars),
-          const SizedBox(height: 28),
-
-          // Appointment Status
-          _SectionHeader(title: 'Appointment Status'),
-          _StatusBar(statusCounts: statusCounts),
-          const SizedBox(height: 28),
-        ],
+        ),
       ),
     );
   }
