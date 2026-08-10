@@ -1018,39 +1018,32 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
   List<Appointment> get _filteredAppointments {
     final now = DateTime.now();
     final startOfToday = DateTime(now.year, now.month, now.day);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    DateTime? parseDate(String date) {
+      final parts = date.split(', ');
+      if (parts.length != 2) return null;
+      final monthDay = parts[1].split(' ');
+      if (monthDay.length != 2) return null;
+      final month = monthNames.indexOf(monthDay[0]) + 1;
+      if (month < 1) return null;
+      final day = int.tryParse(monthDay[1]);
+      if (day == null) return null;
+      return DateTime(now.year, month, day);
+    }
 
     switch (_range) {
       case _AnalyticsRange.next7Days:
         final cutoff = now.add(const Duration(days: 7));
         return _appointments.where((a) {
-          final parts = a.date.split(', ');
-          if (parts.length != 2) return false;
-          final dateStr = parts[1];
-          final monthStr = parts[0];
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          final month = monthNames.indexOf(monthStr) + 1;
-          if (month < 1) return false;
-          final dayMatch = RegExp(r'^\d+').firstMatch(dateStr);
-          if (dayMatch == null) return false;
-          final day = int.parse(dayMatch.group(0)!);
-          final year = now.year;
-          final apptDate = DateTime(year, month, day);
+          final apptDate = parseDate(a.date);
+          if (apptDate == null) return false;
           return apptDate.isAfter(startOfToday.subtract(const Duration(days: 1))) && apptDate.isBefore(cutoff.add(const Duration(days: 1)));
         }).toList();
       case _AnalyticsRange.thisMonth:
         return _appointments.where((a) {
-          final parts = a.date.split(', ');
-          if (parts.length != 2) return false;
-          final dateStr = parts[1];
-          final monthStr = parts[0];
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          final month = monthNames.indexOf(monthStr) + 1;
-          if (month < 1) return false;
-          final dayMatch = RegExp(r'^\d+').firstMatch(dateStr);
-          if (dayMatch == null) return false;
-          final day = int.parse(dayMatch.group(0)!);
-          final year = now.year;
-          final apptDate = DateTime(year, month, day);
+          final apptDate = parseDate(a.date);
+          if (apptDate == null) return false;
           return apptDate.month == now.month && apptDate.year == now.year;
         }).toList();
     }
