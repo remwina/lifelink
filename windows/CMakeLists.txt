@@ -10,6 +10,10 @@ set(BINARY_NAME "lifelink")
 # versions of CMake.
 cmake_policy(VERSION 3.14...3.25)
 
+# Suppress CMake developer deprecation warnings from third-party SDKs
+# (e.g. Firebase C++ SDK) that still use older cmake_minimum_required.
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "" FORCE)
+
 # Define build configuration option.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(IS_MULTICONFIG)
@@ -58,7 +62,24 @@ add_subdirectory("runner")
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
-include(flutter/generated_plugins.cmake)
+#
+# In demo mode we skip the Firebase C++ SDK plugins (cloud_firestore,
+# firebase_auth, firebase_core) to avoid the Windows CMake/build failure
+# caused by the embedded Firebase C++ SDK. Non-Firebase plugins are included
+# explicitly below.
+# include(flutter/generated_plugins.cmake)
+
+set(FLUTTER_FFI_PLUGIN_LIST
+  flutter_local_notifications_windows
+  jni
+)
+
+set(PLUGIN_BUNDLED_LIBRARIES)
+
+foreach(ffi_plugin ${FLUTTER_FFI_PLUGIN_LIST})
+  add_subdirectory(flutter/ephemeral/.plugin_symlinks/${ffi_plugin}/windows plugins/${ffi_plugin})
+  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${ffi_plugin}_bundled_libraries})
+endforeach(ffi_plugin)
 
 
 # === Installation ===

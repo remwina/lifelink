@@ -13,7 +13,7 @@ import 'shell.dart';
 
 const String _adminEmail = 'admin@lifelink.app';
 // Set to false when Firebase is configured and ready for integration testing.
-const bool demoMode = true;
+const bool demoMode = bool.fromEnvironment('DEMO_MODE', defaultValue: true);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
