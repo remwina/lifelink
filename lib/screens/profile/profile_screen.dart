@@ -154,11 +154,26 @@ class _ProfileHeader extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
             tabs: const [
-              Tab(text: 'History'),
-              Tab(text: 'Challenges'),
-              Tab(text: 'Badges'),
-              Tab(text: 'Community'),
-              Tab(text: 'Settings'),
+              Tab(
+                icon: Icon(Icons.history_rounded, size: 20),
+                text: 'History',
+              ),
+              Tab(
+                icon: Icon(Icons.emoji_events_rounded, size: 20),
+                text: 'Challenges',
+              ),
+              Tab(
+                icon: Icon(Icons.star_rounded, size: 20),
+                text: 'Badges',
+              ),
+              Tab(
+                icon: Icon(Icons.groups_rounded, size: 20),
+                text: 'Community',
+              ),
+              Tab(
+                icon: Icon(Icons.settings_rounded, size: 20),
+                text: 'Settings',
+              ),
             ],
           ),
         ),
@@ -759,6 +774,10 @@ class _BadgeTile extends StatelessWidget {
                     0,
                     1,
                     0,
+                    0,
+                    0,
+                    0,
+                    1,
                   ]),
             child: Text(badge.emoji, style: const TextStyle(fontSize: 32)),
           ),
