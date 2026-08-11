@@ -21,7 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 4, vsync: this);
+    _tab = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -56,6 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             _ChallengesTab(user: user),
             _BadgesTab(user: user),
             _CommunityTab(user: user),
+            const _SettingsTab(),
           ],
         ),
       ),
@@ -157,6 +158,7 @@ class _ProfileHeader extends StatelessWidget {
               Tab(text: 'Challenges'),
               Tab(text: 'Badges'),
               Tab(text: 'Community'),
+              Tab(text: 'Settings'),
             ],
           ),
         ),
@@ -373,6 +375,43 @@ class _ProfileInfo extends StatelessWidget {
               _ProfileStat(value: '${user.bloodGivenL}L', label: 'Blood given'),
             ],
           ),
+          const SizedBox(height: 16),
+
+          // Next eligible donation
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.15)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.event_available_rounded,
+                    color: AppColors.primary, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Next eligible: ${user.nextEligibleDate}',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const Spacer(),
+                if (user.daysUntilEligible > 0)
+                  Text(
+                    'in ${user.daysUntilEligible}d',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.danger,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -425,6 +464,41 @@ class _HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final history = user.history;
+
+    if (history.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.history_rounded,
+                  color: AppColors.textMuted, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                'No donations yet',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.dmSerifDisplay(
+                  fontSize: 18,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Your donation history will appear here after your first',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ListView(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -432,7 +506,7 @@ class _HistoryTab extends StatelessWidget {
         16,
         24 + MediaQuery.of(context).padding.bottom,
       ),
-      children: [...user.history.map((h) => _HistoryCard(history: h))],
+      children: [...history.map((h) => _HistoryCard(history: h))],
     );
   }
 }
@@ -682,6 +756,7 @@ class _BadgeTile extends StatelessWidget {
                     0,
                     0,
                     0,
+                    0,
                     1,
                     0,
                   ]),
@@ -713,6 +788,7 @@ class _BadgeTile extends StatelessWidget {
   }
 }
 
+// ── Community Tab ───────────────────────────────────────────────────────────────
 class _CommunityTab extends StatelessWidget {
   final UserProfile user;
 
@@ -755,7 +831,7 @@ class _CommunityTab extends StatelessWidget {
               Expanded(
                 child: Text(
                   userRank == 1
-                      ? 'You’re leading the kindness list!'
+                      ? 'You\'re leading the kindness list!'
                       : 'Every donation moves you up the kindness list.',
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
@@ -790,12 +866,12 @@ class _CommunityTab extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         ...donors.asMap().entries.map(
-          (entry) => _DonorRankCard(
-            rank: entry.key + 1,
-            donor: entry.value,
-            isCurrentUser: entry.value.name == user.name,
-          ),
-        ),
+              (entry) => _DonorRankCard(
+                rank: entry.key + 1,
+                donor: entry.value,
+                isCurrentUser: entry.value.name == user.name,
+              ),
+            ),
         const SizedBox(height: 8),
         Text(
           'Demo rankings — connect your community to see real heroes here.',
@@ -861,10 +937,10 @@ class _DonorRankCard extends StatelessWidget {
           const SizedBox(width: 10),
           CircleAvatar(
             radius: 19,
-            backgroundColor: isCurrentUser
-                ? Colors.white
-                : AppColors.surfaceAlt,
-            child: Text(donor.emoji, style: const TextStyle(fontSize: 18)),
+            backgroundColor:
+                isCurrentUser ? Colors.white : AppColors.surfaceAlt,
+            child:
+                Text(donor.emoji, style: const TextStyle(fontSize: 18)),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -887,6 +963,222 @@ class _DonorRankCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Settings Tab ────────────────────────────────────────────────────────────────
+class _SettingsTab extends StatelessWidget {
+  const _SettingsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.read<ap.AuthProvider>();
+    final demoMode = auth.demoMode;
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      children: [
+        Text(
+          'Settings',
+          style: GoogleFonts.dmSerifDisplay(
+            fontSize: 20,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _SettingTile(
+          icon: Icons.bloodtype_rounded,
+          iconColor: AppColors.primary,
+          title: 'Default blood type',
+          value: 'O+',
+          onTap: () {},
+        ),
+        _SettingTile(
+          icon: Icons.notifications_rounded,
+          iconColor: AppColors.warning,
+          title: 'Push notifications',
+          trailing: Switch(
+            value: true,
+            activeThumbColor: AppColors.primary,
+            onChanged: (v) {},
+          ),
+        ),
+        _SettingTile(
+          icon: Icons.dark_mode_rounded,
+          iconColor: AppColors.textSecondary,
+          title: 'Dark mode',
+          trailing: Switch(
+            value: false,
+            activeThumbColor: AppColors.primary,
+            onChanged: (v) {},
+          ),
+        ),
+        const _SectionDivider(title: 'Support'),
+        _SettingTile(
+          icon: Icons.help_rounded,
+          iconColor: AppColors.primary,
+          title: 'Help & FAQ',
+          onTap: () {},
+        ),
+        _SettingTile(
+          icon: Icons.feedback_rounded,
+          iconColor: AppColors.accent,
+          title: 'Send feedback',
+          onTap: () {},
+        ),
+        _SettingTile(
+          icon: Icons.info_rounded,
+          iconColor: AppColors.textSecondary,
+          title: 'About LifeLink',
+          onTap: () {},
+        ),
+        if (!demoMode) ...[
+          const _SectionDivider(title: 'Account'),
+          _SettingTile(
+            icon: Icons.edit_rounded,
+            iconColor: AppColors.primary,
+            title: 'Edit profile',
+            onTap: () {},
+          ),
+          _SettingTile(
+            icon: Icons.logout_rounded,
+            iconColor: AppColors.danger,
+            title: 'Sign out',
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text(
+                    'Sign out',
+                    style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                  ),
+                  content: Text('Are you sure you want to sign out?',
+                      style: GoogleFonts.dmSans()),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: Text(
+                        'Sign out',
+                        style: GoogleFonts.dmSans(color: AppColors.danger),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true && context.mounted) {
+                await auth.signOut();
+              }
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SectionDivider extends StatelessWidget {
+  final String title;
+  const _SectionDivider({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Text(
+        title,
+        style: GoogleFonts.dmSans(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textMuted,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? value;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  const _SettingTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.value,
+    this.trailing,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: onTap != null ? AppColors.surfaceAlt : AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 17),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            if (value != null)
+              Text(
+                value!,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            if (trailing != null) ...[
+              const SizedBox(width: 8),
+              trailing!,
+            ],
+            if (onTap != null && trailing == null && value == null)
+              const SizedBox(
+                width: 34,
+                child: Icon(Icons.chevron_right_rounded,
+                    color: AppColors.textMuted, size: 16),
+              ),
+          ],
+        ),
       ),
     );
   }

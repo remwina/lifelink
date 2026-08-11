@@ -311,6 +311,37 @@ class AppProvider extends ChangeNotifier {
       bloodGivenL: 2.7,
       streakCount: 4,
       nextEligibleDate: 'Aug 22, 2026',
+      daysUntilEligible: 11,
+      history: const [
+        DonationHistory(
+          id: 'demo-hist-1',
+          date: 'Jul 15, 2026',
+          center: 'Philippine General Hospital',
+          type: 'Whole Blood',
+          volumeL: 0.45,
+        ),
+        DonationHistory(
+          id: 'demo-hist-2',
+          date: 'Jun 3, 2026',
+          center: 'Red Cross — Manila Chapter',
+          type: 'Whole Blood',
+          volumeL: 0.45,
+        ),
+        DonationHistory(
+          id: 'demo-hist-3',
+          date: 'Apr 22, 2026',
+          center: 'St. Luke\'s Medical Center',
+          type: 'Double Red Cell',
+          volumeL: 0.35,
+        ),
+        DonationHistory(
+          id: 'demo-hist-4',
+          date: 'Mar 10, 2026',
+          center: 'Philippine General Hospital',
+          type: 'Whole Blood',
+          volumeL: 0.45,
+        ),
+      ],
       challenges: const [
         Challenge(
           title: 'First Drop',
