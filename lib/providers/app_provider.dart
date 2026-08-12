@@ -212,6 +212,8 @@ class AppProvider extends ChangeNotifier {
       (list) {
         _centers = list;
         _centersLoading = false;
+        // Auto-select the first center if the user hasn't chosen one yet
+        _selectedCenter ??= list.isNotEmpty ? list.first : null;
         notifyListeners();
       },
       onError: (Object error) {
@@ -260,6 +262,12 @@ class AppProvider extends ChangeNotifier {
   // ── Appointments ──────────────────────────────────────────────────────────
   List<Appointment> _appointments = [];
   List<Appointment> get appointments => _appointments;
+
+  bool _isCancelling = false;
+  bool get isCancelling => _isCancelling;
+
+  String? _cancelError;
+  String? get cancelError => _cancelError;
 
   Appointment? get nextAppointment {
     final upcoming = _appointments
@@ -398,6 +406,8 @@ class AppProvider extends ChangeNotifier {
         lng: 120.9842,
       ),
     ];
+    // Auto-select the first center so the booking flow has a valid default
+    _selectedCenter ??= _centers.first;
     _notifications = const [
       NotificationItem(
         id: 'demo-urgent',
@@ -448,6 +458,45 @@ class AppProvider extends ChangeNotifier {
     _pulseAlertVisible = false;
     resetBooking();
     notifyListeners();
+  }
+
+  Future<bool> cancelAppointment(String appointmentId) async {
+    if (demoMode) {
+      _appointments = _appointments.map((a) {
+        if (a.id == appointmentId) {
+          return Appointment(
+            id: a.id,
+            userId: a.userId,
+            centerName: a.centerName,
+            centerAddress: a.centerAddress,
+            centerId: a.centerId,
+            date: a.date,
+            time: a.time,
+            status: AppointmentStatus.cancelled,
+            createdAt: a.createdAt,
+          );
+        }
+        return a;
+      }).toList();
+      notifyListeners();
+      return true;
+    }
+
+    _isCancelling = true;
+    _cancelError = null;
+    notifyListeners();
+
+    try {
+      await _db.cancelAppointment(appointmentId);
+      _isCancelling = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _cancelError = 'Could not cancel appointment. Please try again.';
+      _isCancelling = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   // ── Booking flow ───────────────────────────────────────────────────────────

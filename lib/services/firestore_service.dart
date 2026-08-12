@@ -118,6 +118,14 @@ class FirestoreService {
     return ref.id;
   }
 
+  /// Updates an appointment's status to cancelled.
+  Future<void> cancelAppointment(String appointmentId) async {
+    await _appointments.doc(appointmentId).update({
+      'status': AppointmentStatus.cancelled.name,
+      'cancelledAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// Real-time stream of upcoming appointments for a user.
   Stream<List<Appointment>> appointmentsStream(String uid) {
     return _appointments

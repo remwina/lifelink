@@ -13,6 +13,15 @@ class SlotPickerStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
+
+    // Ensure a center is always selected in the provider — sync the fallback
+    // on the next frame so we don't call setState during build.
+    if (provider.selectedCenter == null && provider.centers.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        provider.selectCenter(provider.centers.first);
+      });
+    }
+
     final center = provider.selectedCenter ??
         (provider.centers.isNotEmpty ? provider.centers.first : null);
 
@@ -61,7 +70,16 @@ class SlotPickerStep extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             if (center != null)
-                              _CenterSelector(selected: center)
+                              _CenterSelector(
+                                selected: center,
+                                onTap: provider.centers.length > 1
+                                    ? () => _showCenterPicker(
+                                          context,
+                                          provider.centers,
+                                          provider.selectCenter,
+                                        )
+                                    : null,
+                              )
                             else
                               Container(
                                 padding: const EdgeInsets.all(14),
@@ -129,63 +147,141 @@ class SlotPickerStep extends StatelessWidget {
   }
 }
 
+void _showCenterPicker(
+  BuildContext context,
+  List<DonationCenter> centers,
+  void Function(DonationCenter) onSelect,
+) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select Donation Center',
+                style: GoogleFonts.dmSerifDisplay(
+                  fontSize: 18,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...centers.map(
+                (c) => ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.local_hospital_rounded,
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
+                  ),
+                  title: Text(
+                    c.name,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${c.address} · ${c.hours}',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  onTap: () {
+                    onSelect(c);
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 class _CenterSelector extends StatelessWidget {
   final DonationCenter selected;
+  final VoidCallback? onTap;
 
-  const _CenterSelector({required this.selected});
+  const _CenterSelector({required this.selected, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.primary, width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.local_hospital_rounded,
+                color: AppColors.primary,
+                size: 20,
+              ),
             ),
-            child: const Icon(
-              Icons.local_hospital_rounded,
-              color: AppColors.primary,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    selected.name,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    '${selected.address} · ${selected.hours}',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: onTap != null ? AppColors.textMuted : AppColors.border,
               size: 20,
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  selected.name,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  '${selected.address} · ${selected.hours}',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.textMuted,
-            size: 20,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
