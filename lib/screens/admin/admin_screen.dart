@@ -1220,6 +1220,31 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
             _StatusBar(statusCounts: statusCounts),
             const SizedBox(height: 28),
 
+            // Upcoming appointments — mark as completed
+            _SectionHeader(title: 'Upcoming Appointments'),
+            ..._appointments
+                .where((a) => a.status == AppointmentStatus.upcoming)
+                .map((a) => _AppointmentAdminCard(
+                      appointment: a,
+                      onMarkCompleted: widget.demoMode
+                          ? null
+                          : () => _markCompleted(a),
+                    )),
+            if (_appointments
+                .where((a) => a.status == AppointmentStatus.upcoming)
+                .isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'No upcoming appointments.',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
+
             if (_lastUpdated != null)
               Align(
                 alignment: Alignment.centerRight,
@@ -1233,6 +1258,173 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _markCompleted(Appointment appointment) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text(
+          'Mark as Completed?',
+          style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'This will mark the appointment at ${appointment.centerName} on ${appointment.date} as completed and update ${appointment.userId}\'s donation stats.',
+          style: GoogleFonts.dmSans(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel',
+                style:
+                    GoogleFonts.dmSans(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.success),
+            child:
+                Text('Confirm', style: GoogleFonts.dmSans()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await FirestoreService().completeAppointment(appointment);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Appointment marked as completed.',
+              style: GoogleFonts.dmSans(),
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        await _load(showLoading: false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to update: ${e.toString()}',
+              style: GoogleFonts.dmSans(),
+            ),
+            backgroundColor: AppColors.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+}
+
+class _AppointmentAdminCard extends StatelessWidget {
+  final Appointment appointment;
+  final VoidCallback? onMarkCompleted;
+
+  const _AppointmentAdminCard({
+    required this.appointment,
+    this.onMarkCompleted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.calendar_today_rounded,
+                color: AppColors.primary, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  appointment.centerName,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  '${appointment.date}  ·  ${appointment.time}',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  'User: ${appointment.userId}',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    color: AppColors.textMuted,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (onMarkCompleted != null) ...[
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: onMarkCompleted,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.success,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                textStyle: GoogleFonts.dmSans(
+                    fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+              child: const Text('Complete'),
+            ),
+          ] else ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Demo',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -126,6 +126,56 @@ class FirestoreService {
     });
   }
 
+  /// Marks an appointment as completed and atomically updates the donor's
+  /// stats: donationsTotal++, livesHelped += 3, bloodGivenL += 0.45,
+  /// streakCount++, nextEligibleDate (56 days from now), and adds a
+  /// donationHistory entry.
+  Future<void> completeAppointment(Appointment appointment) async {
+    const double volumeL = 0.45;
+    const int livesPerDonation = 3;
+    const int eligibilityDays = 56;
+
+    final now = DateTime.now();
+    final eligible = now.add(const Duration(days: eligibilityDays));
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final eligibleStr =
+        '${months[eligible.month - 1]} ${eligible.day}, ${eligible.year}';
+
+    final batch = _db.batch();
+
+    // 1. Update appointment status
+    batch.update(_appointments.doc(appointment.id), {
+      'status': AppointmentStatus.completed.name,
+      'completedAt': FieldValue.serverTimestamp(),
+    });
+
+    // 2. Increment donor stats atomically
+    batch.update(_users.doc(appointment.userId), {
+      'donationsTotal': FieldValue.increment(1),
+      'livesHelped': FieldValue.increment(livesPerDonation),
+      'bloodGivenL': FieldValue.increment(volumeL),
+      'streakCount': FieldValue.increment(1),
+      'nextEligibleDate': eligibleStr,
+      'daysUntilEligible': eligibilityDays,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    // 3. Add a donation history entry
+    final historyRef = _historyFor(appointment.userId).doc();
+    batch.set(historyRef, {
+      'center': appointment.centerName,
+      'type': 'Whole Blood',
+      'volumeL': volumeL,
+      'date': appointment.date,
+      'donatedAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
+
   /// Real-time stream of upcoming appointments for a user.
   Stream<List<Appointment>> appointmentsStream(String uid) {
     return _appointments
