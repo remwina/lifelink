@@ -463,6 +463,22 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<bool> cancelAppointment(String appointmentId) async {
+    // Find the appointment to get its details for reminder cancellation
+    final appointment = _appointments.firstWhere(
+      (a) => a.id == appointmentId,
+      orElse: () => Appointment(
+        id: '',
+        userId: '',
+        centerName: '',
+        centerAddress: '',
+        centerId: '',
+        date: '',
+        time: '',
+        status: AppointmentStatus.cancelled,
+        createdAt: DateTime.now(),
+      ),
+    );
+
     if (demoMode) {
       _appointments = _appointments.map((a) {
         if (a.id == appointmentId) {
@@ -480,6 +496,16 @@ class AppProvider extends ChangeNotifier {
         }
         return a;
       }).toList();
+
+      // Cancel the scheduled reminder
+      if (appointment.id.isNotEmpty) {
+        await ReminderService.cancelAppointmentReminder(
+          centerName: appointment.centerName,
+          date: appointment.date,
+          time: appointment.time,
+        );
+      }
+
       notifyListeners();
       return true;
     }
@@ -490,6 +516,16 @@ class AppProvider extends ChangeNotifier {
 
     try {
       await _db.cancelAppointment(appointmentId);
+
+      // Cancel the scheduled reminder
+      if (appointment.id.isNotEmpty) {
+        await ReminderService.cancelAppointmentReminder(
+          centerName: appointment.centerName,
+          date: appointment.date,
+          time: appointment.time,
+        );
+      }
+
       _isCancelling = false;
       notifyListeners();
       return true;

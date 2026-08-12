@@ -41,6 +41,8 @@ A 4-step appointment flow:
 
 Users can cancel upcoming appointments from the home screen or profile Appointments tab.
 
+**Note:** Local notification reminders are currently disabled due to API compatibility issues with `flutter_local_notifications` v22.3.0 on Windows. The infrastructure is in place to schedule reminders 24 hours before appointments once the API is updated.
+
 ### Admin Panel
 - Analytics dashboard showing total users, appointments, completed donations
 - **User management** — view all registered donors with stats
@@ -76,6 +78,8 @@ Users can cancel upcoming appointments from the home screen or profile Appointme
 | State Management | Provider ^6.1.2 |
 | Auth | Firebase Auth ^5.5.4 |
 | Database | Cloud Firestore ^5.6.8 |
+| Local Notifications | flutter_local_notifications ^18.0.1 |
+| Timezone | timezone ^0.9.5 |
 | Maps | flutter_map ^8.3.1 + latlong2 ^0.10.1 |
 | Fonts | google_fonts ^8.2.1 (DM Serif Display + DM Sans) |
 | Map Tiles | OpenStreetMap |
