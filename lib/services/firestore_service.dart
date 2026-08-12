@@ -174,6 +174,89 @@ class FirestoreService {
     });
 
     await batch.commit();
+
+    // 4. Recalculate challenges and badges after commit
+    await _updateChallengesAndBadges(appointment.userId);
+  }
+
+  /// Recalculates challenge progress and badge earned status based on
+  /// current user stats (donationsTotal, livesHelped, streakCount).
+  Future<void> _updateChallengesAndBadges(String uid) async {
+    final userDoc = await _users.doc(uid).get();
+    if (!userDoc.exists) return;
+
+    final data = userDoc.data()!;
+    final donationsTotal = (data['donationsTotal'] as num?)?.toInt() ?? 0;
+    final livesHelped = (data['livesHelped'] as num?)?.toInt() ?? 0;
+    final streakCount = (data['streakCount'] as num?)?.toInt() ?? 0;
+
+    // Update challenges
+    final challenges = [
+      {
+        'title': 'First Drop',
+        'description': 'Complete your first donation',
+        'current': donationsTotal.clamp(0, 1),
+        'target': 1,
+        'reward': '🩸 First Drop Badge',
+        'completed': donationsTotal >= 1,
+      },
+      {
+        'title': 'Frequent Donor',
+        'description': 'Donate 5 times in a year',
+        'current': donationsTotal.clamp(0, 5),
+        'target': 5,
+        'reward': '🏆 Gold Badge',
+        'completed': donationsTotal >= 5,
+      },
+      {
+        'title': 'Community Hero',
+        'description': 'Help 50 lives through donations',
+        'current': livesHelped.clamp(0, 50),
+        'target': 50,
+        'reward': '🌟 Hero Badge',
+        'completed': livesHelped >= 50,
+      },
+    ];
+
+    // Update badges
+    final badges = [
+      {
+        'emoji': '🩸',
+        'label': 'First Drop',
+        'earned': donationsTotal >= 1,
+      },
+      {
+        'emoji': '🔥',
+        'label': '4-Streak',
+        'earned': streakCount >= 4,
+      },
+      {
+        'emoji': '⭐',
+        'label': '10 Donations',
+        'earned': donationsTotal >= 10,
+      },
+      {
+        'emoji': '🏆',
+        'label': 'Life Saver',
+        'earned': livesHelped >= 15,
+      },
+      {
+        'emoji': '🌟',
+        'label': 'Hero',
+        'earned': livesHelped >= 50,
+      },
+      {
+        'emoji': '💎',
+        'label': 'Elite',
+        'earned': donationsTotal >= 25,
+      },
+    ];
+
+    await _users.doc(uid).update({
+      'challenges': challenges,
+      'badges': badges,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Real-time stream of upcoming appointments for a user.

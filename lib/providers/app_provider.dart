@@ -371,7 +371,9 @@ class AppProvider extends ChangeNotifier {
         DonorBadge(emoji: '🩸', label: 'First Drop', earned: true),
         DonorBadge(emoji: '🔥', label: '4-Streak', earned: true),
         DonorBadge(emoji: '⭐', label: '10 Donations', earned: false),
-        DonorBadge(emoji: '🏆', label: 'Life Saver', earned: false),
+        DonorBadge(emoji: '🏆', label: 'Life Saver', earned: true),
+        DonorBadge(emoji: '🌟', label: 'Hero', earned: false),
+        DonorBadge(emoji: '💎', label: 'Elite', earned: false),
       ],
     );
     _bloodSupply = const [

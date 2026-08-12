@@ -143,35 +143,48 @@ class UserProfile {
     final rawChallenges = (d['challenges'] as List<dynamic>?) ?? [];
     final rawBadges = (d['badges'] as List<dynamic>?) ?? [];
 
+    // If badges/challenges are missing, use defaults based on current stats
+    final donationsTotal = (d['donationsTotal'] as num?)?.toInt() ?? 0;
+    final livesHelped = (d['livesHelped'] as num?)?.toInt() ?? 0;
+    final streakCount = (d['streakCount'] as num?)?.toInt() ?? 0;
+
+    final challenges = rawChallenges.isNotEmpty
+        ? rawChallenges
+            .map((c) => Challenge(
+                  title: c['title'] as String? ?? '',
+                  description: c['description'] as String? ?? '',
+                  current: (c['current'] as num?)?.toInt() ?? 0,
+                  target: (c['target'] as num?)?.toInt() ?? 1,
+                  reward: c['reward'] as String? ?? '',
+                  completed: c['completed'] as bool? ?? false,
+                ))
+            .toList()
+        : _defaultChallenges;
+
+    final badges = rawBadges.isNotEmpty
+        ? rawBadges
+            .map((b) => DonorBadge(
+                  emoji: b['emoji'] as String? ?? '🩸',
+                  label: b['label'] as String? ?? '',
+                  earned: b['earned'] as bool? ?? false,
+                ))
+            .toList()
+        : _computeDefaultBadges(donationsTotal, livesHelped, streakCount);
+
     return UserProfile(
       uid: doc.id,
       name: d['name'] as String? ?? 'Donor',
       email: d['email'] as String? ?? '',
       bloodType: d['bloodType'] as String? ?? 'O+',
-      donationsTotal: (d['donationsTotal'] as num?)?.toInt() ?? 0,
-      livesHelped: (d['livesHelped'] as num?)?.toInt() ?? 0,
+      donationsTotal: donationsTotal,
+      livesHelped: livesHelped,
       bloodGivenL: (d['bloodGivenL'] as num?)?.toDouble() ?? 0.0,
-      streakCount: (d['streakCount'] as num?)?.toInt() ?? 0,
+      streakCount: streakCount,
       daysUntilEligible: (d['daysUntilEligible'] as num?)?.toInt() ?? 0,
       nextEligibleDate: d['nextEligibleDate'] as String? ?? '—',
       history: const [], // loaded separately from sub-collection
-      challenges: rawChallenges
-          .map((c) => Challenge(
-                title: c['title'] as String? ?? '',
-                description: c['description'] as String? ?? '',
-                current: (c['current'] as num?)?.toInt() ?? 0,
-                target: (c['target'] as num?)?.toInt() ?? 1,
-                reward: c['reward'] as String? ?? '',
-                completed: c['completed'] as bool? ?? false,
-              ))
-          .toList(),
-      badges: rawBadges
-          .map((b) => DonorBadge(
-                emoji: b['emoji'] as String? ?? '🩸',
-                label: b['label'] as String? ?? '',
-                earned: b['earned'] as bool? ?? false,
-              ))
-          .toList(),
+      challenges: challenges,
+      badges: badges,
     );
   }
 
@@ -238,6 +251,21 @@ class UserProfile {
 }
 
 // ── Default seed data for new users ──────────────────────────────────────────
+
+/// Computes default badges based on current stats for users who don't have
+/// badges in Firestore yet (created before the badges feature was added).
+List<DonorBadge> _computeDefaultBadges(
+    int donationsTotal, int livesHelped, int streakCount) {
+  return [
+    DonorBadge(emoji: '🩸', label: 'First Drop', earned: donationsTotal >= 1),
+    DonorBadge(emoji: '🔥', label: '4-Streak', earned: streakCount >= 4),
+    DonorBadge(emoji: '⭐', label: '10 Donations', earned: donationsTotal >= 10),
+    DonorBadge(emoji: '🏆', label: 'Life Saver', earned: livesHelped >= 15),
+    DonorBadge(emoji: '🌟', label: 'Hero', earned: livesHelped >= 50),
+    DonorBadge(emoji: '💎', label: 'Elite', earned: donationsTotal >= 25),
+  ];
+}
+
 const List<Challenge> _defaultChallenges = [
   Challenge(
     title: 'First Drop',
