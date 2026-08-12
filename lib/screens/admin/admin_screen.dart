@@ -238,32 +238,27 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
         padding: const EdgeInsets.all(16),
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.warningLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFCC80)),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.warningLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFFCC80)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline_rounded,
+                    color: AppColors.warning, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Tap any blood type to edit its supply level.',
+                    style: GoogleFonts.dmSans(
+                        fontSize: 13, color: AppColors.warning),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline_rounded,
-                        color: AppColors.warning, size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Tap any blood type to edit its supply level.',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 13, color: AppColors.warning),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           ..._entries.map((e) => _BloodSupplyRow(
@@ -1127,6 +1122,9 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
     final bloodTypeBars = _getBloodTypeBars();
     final centerBars = _getCenterBars(filtered);
     final statusCounts = _getStatusCounts(filtered);
+    final upcomingAll = _appointments
+        .where((a) => a.status == AppointmentStatus.upcoming)
+        .toList();
 
     return RefreshIndicator(
       onRefresh: _refresh,
@@ -1137,9 +1135,10 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Date range selector
+            // ── Date range selector ───────────────────────────────────────
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(10),
@@ -1147,92 +1146,106 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
               ),
               child: Row(
                 children: [
-                  Text('Range:', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                  Text(
+                    'Range:',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(width: 8),
                   _RangeChip(
                     label: 'Next 7 Days',
                     selected: _range == _AnalyticsRange.next7Days,
-                    onTap: () => setState(() => _range = _AnalyticsRange.next7Days),
+                    onTap: () => setState(
+                        () => _range = _AnalyticsRange.next7Days),
                   ),
                   _RangeChip(
                     label: 'This Month',
                     selected: _range == _AnalyticsRange.thisMonth,
-                    onTap: () => setState(() => _range = _AnalyticsRange.thisMonth),
+                    onTap: () => setState(
+                        () => _range = _AnalyticsRange.thisMonth),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
 
-            // Summary cards
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+            // ── Summary stat cards (2 × 2 grid, fixed height) ─────────────
+            Row(
               children: [
-                _StatCard(
-                  title: 'Total Users',
-                  value: '${_users.length}',
-                  icon: Icons.people_rounded,
-                  color: AppColors.primary,
+                Expanded(
+                  child: _StatCard(
+                    title: 'Total Users',
+                    value: '${_users.length}',
+                    icon: Icons.people_rounded,
+                    color: AppColors.primary,
+                  ),
                 ),
-                _StatCard(
-                  title: 'Appointments',
-                  value: '${filtered.length}',
-                  icon: Icons.calendar_month_rounded,
-                  color: AppColors.accent,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Appointments',
+                    value: '${filtered.length}',
+                    icon: Icons.calendar_month_rounded,
+                    color: AppColors.accent,
+                  ),
                 ),
-                _StatCard(
-                  title: 'Completed',
-                  value: '${statusCounts[AppointmentStatus.completed] ?? 0}',
-                  icon: Icons.check_circle_rounded,
-                  color: AppColors.success,
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    title: 'Completed',
+                    value:
+                        '${statusCounts[AppointmentStatus.completed] ?? 0}',
+                    icon: Icons.check_circle_rounded,
+                    color: AppColors.success,
+                  ),
                 ),
-                _StatCard(
-                  title: 'Active Centers',
-                  value: '${centerBars.length}',
-                  icon: Icons.local_hospital_rounded,
-                  color: AppColors.warning,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Active Centers',
+                    value: '${centerBars.length}',
+                    icon: Icons.local_hospital_rounded,
+                    color: AppColors.warning,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 28),
 
-            // Bookings Trend
-            _SectionHeader(title: _range == _AnalyticsRange.next7Days ? 'Upcoming Bookings (Next 7 Days)' : 'Bookings This Month'),
+            // ── Bookings Trend ────────────────────────────────────────────
+            _SectionHeader(
+              title: _range == _AnalyticsRange.next7Days
+                  ? 'Upcoming Bookings (Next 7 Days)'
+                  : 'Bookings This Month',
+            ),
             _VerticalBarChart(bars: trendBars),
             const SizedBox(height: 28),
 
-            // Blood Type Distribution
+            // ── Blood Type Distribution ───────────────────────────────────
             _SectionHeader(title: 'Blood Type Distribution'),
             _HorizontalBarChart(bars: bloodTypeBars),
             const SizedBox(height: 28),
 
-            // Center Performance
+            // ── Top Centers ───────────────────────────────────────────────
             _SectionHeader(title: 'Top Centers'),
             _HorizontalBarChart(bars: centerBars),
             const SizedBox(height: 28),
 
-            // Appointment Status
+            // ── Appointment Status ────────────────────────────────────────
             _SectionHeader(title: 'Appointment Status'),
             _StatusBar(statusCounts: statusCounts),
             const SizedBox(height: 28),
 
-            // Upcoming appointments — mark as completed
-            _SectionHeader(title: 'Upcoming Appointments'),
-            ..._appointments
-                .where((a) => a.status == AppointmentStatus.upcoming)
-                .map((a) => _AppointmentAdminCard(
-                      appointment: a,
-                      onMarkCompleted: widget.demoMode
-                          ? null
-                          : () => _markCompleted(a),
-                    )),
-            if (_appointments
-                .where((a) => a.status == AppointmentStatus.upcoming)
-                .isEmpty)
+            // ── Manage Upcoming Appointments ──────────────────────────────
+            _SectionHeader(title: 'Manage Appointments'),
+            if (upcomingAll.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
@@ -1242,9 +1255,17 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
                     color: AppColors.textMuted,
                   ),
                 ),
-              ),
+              )
+            else
+              ...upcomingAll.map((a) => _AppointmentAdminCard(
+                    appointment: a,
+                    onMarkCompleted: widget.demoMode
+                        ? null
+                        : () => _markCompleted(a),
+                  )),
             const SizedBox(height: 12),
 
+            // ── Last updated ──────────────────────────────────────────────
             if (_lastUpdated != null)
               Align(
                 alignment: Alignment.centerRight,
@@ -1309,7 +1330,12 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        await _load(showLoading: false);
+        // Defer the reload to avoid rebuilding during mouse tracking
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _load(showLoading: false);
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
