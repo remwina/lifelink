@@ -34,10 +34,19 @@ LifeLink helps you track your eligibility, find nearby donation centers, book ap
 
 ### Booking Wizard
 A 4-step appointment flow:
-1. Pick a date and time slot
-2. Health screener questionnaire
-3. Review your appointment details
-4. Confirmation — **appointment saved to Firestore**
+1. **Slot picker** — select donation center, date, and time slot (live center data from Firestore)
+2. **Health screener** — questionnaire to ensure eligibility
+3. **Review** — confirm appointment details before booking
+4. **Confirmation** — appointment saved to Firestore with status tracking
+
+Users can cancel upcoming appointments from the home screen or profile Appointments tab.
+
+### Admin Panel
+- Analytics dashboard showing total users, appointments, completed donations
+- **User management** — view all registered donors with stats
+- **Appointment management** — complete upcoming appointments to update donor stats
+- **Blood supply editor** — adjust inventory levels for all 8 blood types
+- Real-time updates reflected across all users immediately
 
 ### Map
 - Interactive OpenStreetMap powered by `flutter_map`
@@ -47,9 +56,15 @@ A 4-step appointment flow:
 
 ### Profile
 - Collapsing header with avatar, blood type (from Firestore), and donation streak
-- Three tabs: **History · Challenges · Badges**
-- History loaded from `users/{uid}/donationHistory` sub-collection
-- Sign out button with confirmation dialog
+- Six tabs: **Appointments · History · Challenges · Badges · Community · Settings**
+- **Appointments tab** — view all bookings with status badges (upcoming/completed/cancelled) and cancel upcoming appointments
+- **History tab** — donation records loaded from `users/{uid}/donationHistory` sub-collection
+- **Challenges tab** — track progress toward donation milestones with dynamic progress bars
+- **Badges tab** — earn badges based on donation stats (First Drop, 4-Streak, 10 Donations, Life Saver, Hero, Elite)
+- **Community tab** — leaderboard showing top donors (demo rankings)
+- **Settings tab** — notification preferences, dark mode toggle, help/FAQ, and sign out
+- Donor QR card dialog — scannable code for quick check-in at donation centers
+- Sign out with confirmation dialog
 
 ---
 
@@ -98,6 +113,7 @@ lib/
     │   └── steps/
     ├── map/
     ├── profile/
+    ├── admin/                      # Admin panel (hidden button on home)
     └── pulse_alert/
 ```
 
@@ -110,15 +126,18 @@ users/{uid}
   ├── name, email, bloodType
   ├── donationsTotal, livesHelped, bloodGivenL
   ├── streakCount, daysUntilEligible, nextEligibleDate
-  ├── challenges[]  (array of challenge objects)
-  ├── badges[]      (array of badge objects)
+  ├── challenges[]  (array of challenge objects with current/target/completed)
+  ├── badges[]      (array of badge objects with emoji/label/earned)
+  ├── createdAt, updatedAt
   └── donationHistory/  ← sub-collection
-        └── {docId}: date, center, type, volumeL
+        └── {docId}: date, donatedAt, center, type, volumeL
 
 appointments/{docId}
   ├── userId, centerId, centerName, centerAddress
-  ├── date, time, status
-  └── createdAt
+  ├── date, time
+  ├── status (upcoming | completed | cancelled)
+  ├── createdAt, completedAt, cancelledAt
+  └── questionnaire[] (health screening responses)
 
 notifications/{uid}/items/{docId}
   ├── type, title, body
@@ -198,12 +217,15 @@ service cloud.firestore {
       }
     }
 
-    // Appointments: owner read/create only
+    // Appointments: owner read/create/cancel
     match /appointments/{docId} {
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow read: if request.auth != null
                   && resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'cancelled';
     }
 
     // Notifications: owner read/write
