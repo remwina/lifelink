@@ -49,6 +49,7 @@ Users can cancel upcoming appointments from the home screen or profile Appointme
 - **Appointment management** — complete upcoming appointments to update donor stats
 - **Blood supply editor** — adjust inventory levels for all 8 blood types
 - Real-time updates reflected across all users immediately
+- **Access:** Long-press the LifeLink logo 3 times on the home screen (hardcoded to `admin@lifelink.app` in demo mode)
 
 ### Map
 - Interactive OpenStreetMap powered by `flutter_map`
@@ -199,7 +200,21 @@ flutter pub get
 flutter run
 ```
 
-On first launch, the app auto-seeds donation centers and blood supply levels into Firestore. You can edit those documents directly in the Firebase Console — the app picks up changes in real time.
+The app will connect to Firebase by default. On first launch with a new Firebase project, the app auto-seeds donation centers and blood supply levels into Firestore. You can edit those documents directly in the Firebase Console — the app picks up changes in real time.
+
+#### Demo Mode (Optional)
+
+To run without Firebase using hardcoded demo data (useful for UI testing or when Firebase is not configured):
+
+```bash
+flutter run --dart-define=DEMO_MODE=true
+```
+
+In demo mode:
+- All Firebase operations are bypassed
+- Demo user: Jamie Donor (O+, 6 donations, 18 lives helped)
+- Demo centers, blood supply, and appointments are pre-populated
+- Changes are not persisted (reset on app restart)
 
 ---
 
@@ -252,7 +267,9 @@ service cloud.firestore {
 
 ## Notes
 
+- **Firebase is enabled by default** — The app connects to Firebase and persists all data to Firestore unless you explicitly run with `--dart-define=DEMO_MODE=true`
 - All blood supply and donation center data is seeded to Firestore on first run and is **editable via the Firebase Console** — changes appear in the app in real time
 - Map tiles load from OpenStreetMap; an internet connection is required
 - The app is locked to portrait orientation
 - Windows desktop is supported (Firebase for Flutter supports Windows via the C++ SDK)
+- **Admin access:** Long-press the LifeLink logo 3 times on the home screen to open the admin panel (email must match `admin@lifelink.app` or demo user)

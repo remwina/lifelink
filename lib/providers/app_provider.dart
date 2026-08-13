@@ -17,6 +17,16 @@ class AppProvider extends ChangeNotifier {
     if (!demoMode) _db = FirestoreService();
   }
 
+  // ── Dark Mode ──────────────────────────────────────────────────────────────
+  bool _isDarkMode = false;
+  bool get isDarkMode => _isDarkMode;
+
+  void toggleDarkMode() {
+    _isDarkMode = !_isDarkMode;
+    debugPrint('🌙 Dark mode toggled: $_isDarkMode');
+    notifyListeners();
+  }
+
   // ── Navigation ─────────────────────────────────────────────────────────────
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;

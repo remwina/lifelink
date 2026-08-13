@@ -12,8 +12,9 @@ import 'screens/auth/login_screen.dart';
 import 'shell.dart';
 
 const String _adminEmail = 'admin@lifelink.app';
-// Set to false when Firebase is configured and ready for integration testing.
-const bool demoMode = bool.fromEnvironment('DEMO_MODE', defaultValue: true);
+// Set to true to run without Firebase (demo mode with hardcoded data).
+// To enable demo mode: flutter run --dart-define=DEMO_MODE=true
+const bool demoMode = bool.fromEnvironment('DEMO_MODE', defaultValue: false);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,18 +27,28 @@ Future<void> main() async {
   await ReminderService.initialize();
 
   bool firebaseReady = false;
-  if (!demoMode && DefaultFirebaseOptions.android.apiKey != 'YOUR_ANDROID_API_KEY') {
+  if (!demoMode) {
     try {
+      debugPrint('Attempting Firebase initialization...');
+      debugPrint('Platform: ${DefaultFirebaseOptions.currentPlatform.projectId}');
+      
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
       firebaseReady = true;
+      debugPrint('✅ Firebase initialized successfully');
       // NOTE: Seeding is now done after sign-in inside AppProvider.startSession
       // so it runs with auth context. Do NOT seed here.
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ Firebase initialization failed: $e');
+      debugPrint('Stack trace: $stackTrace');
       firebaseReady = false;
     }
+  } else {
+    debugPrint('Running in DEMO MODE (Firebase disabled)');
   }
+
+  debugPrint('firebaseReady: $firebaseReady, demoMode: $demoMode');
 
   runApp(LifeLinkApp(firebaseReady: firebaseReady, demoMode: demoMode));
 }
@@ -60,12 +71,33 @@ class LifeLinkApp extends StatelessWidget {
         ChangeNotifierProvider(
             create: (_) => AppProvider(demoMode: demoMode)),
       ],
-      child: MaterialApp(
-        title: 'LifeLink',
-        debugShowCheckedModeBanner: false,
-        theme: buildAppTheme(),
-        home: demoMode || firebaseReady ? const _AuthGate() : const _SetupBanner(),
-      ),
+      child: const _ThemedApp(),
+    );
+  }
+}
+
+class _ThemedApp extends StatelessWidget {
+  const _ThemedApp();
+
+  @override
+  Widget build(BuildContext context) {
+    final appProvider = context.watch<AppProvider>();
+    final authProvider = context.watch<ap.AuthProvider>();
+    
+    final isDarkMode = appProvider.isDarkMode;
+    debugPrint('🎨 _ThemedApp building with isDarkMode: $isDarkMode');
+    
+    // Determine if we should show the app or setup banner
+    final demoMode = appProvider.demoMode;
+    final firebaseReady = !demoMode; // If not in demo mode, Firebase should be ready
+    
+    return MaterialApp(
+      title: 'LifeLink',
+      debugShowCheckedModeBanner: false,
+      theme: buildAppTheme(isDark: false),
+      darkTheme: buildAppTheme(isDark: true),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: demoMode || firebaseReady ? const _AuthGate() : const _SetupBanner(),
     );
   }
 }
@@ -146,7 +178,7 @@ class _SetupBanner extends StatelessWidget {
                     color: AppColors.warning, size: 56),
                 const SizedBox(height: 20),
                 Text(
-                  'Firebase not configured',
+                  'Firebase initialization failed',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -155,10 +187,12 @@ class _SetupBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Run the FlutterFire CLI to connect this app to your '
-                  'Firebase project, then rebuild.\n\n'
-                  '  dart pub global activate flutterfire_cli\n'
-                  '  flutterfire configure',
+                  'Check the debug console for error details.\n\n'
+                  'To run without Firebase (demo mode):\n'
+                  'flutter run --dart-define=DEMO_MODE=true\n\n'
+                  'Or to reconfigure Firebase:\n'
+                  'dart pub global activate flutterfire_cli\n'
+                  'flutterfire configure',
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium

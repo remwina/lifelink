@@ -36,8 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final user = context.watch<AppProvider>().user;
 
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return Scaffold(
         body: Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
@@ -45,7 +44,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: NestedScrollView(
         headerSliverBuilder: (context, _) => [
           _ProfileHeader(user: user, tabController: _tab),
@@ -78,7 +76,6 @@ class _ProfileHeader extends StatelessWidget {
     return SliverAppBar(
       expandedHeight: 300,
       pinned: true,
-      backgroundColor: AppColors.background,
       automaticallyImplyLeading: false,
       actions: [
         IconButton(
@@ -140,7 +137,7 @@ class _ProfileHeader extends StatelessWidget {
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(48),
         child: Container(
-          color: AppColors.background,
+          color: Theme.of(context).scaffoldBackgroundColor,
           child: TabBar(
             controller: tabController,
             labelColor: AppColors.primary,
@@ -1315,9 +1312,11 @@ class _SettingsTab extends StatelessWidget {
           iconColor: AppColors.textSecondary,
           title: 'Dark mode',
           trailing: Switch(
-            value: false,
+            value: context.watch<AppProvider>().isDarkMode,
             activeThumbColor: AppColors.primary,
-            onChanged: (v) {},
+            onChanged: (v) {
+              context.read<AppProvider>().toggleDarkMode();
+            },
           ),
         ),
         const _SectionDivider(title: 'Support'),
