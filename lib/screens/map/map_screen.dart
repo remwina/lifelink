@@ -77,7 +77,6 @@ class _MapScreenState extends State<MapScreen> {
     final filteredIds = filtered.map((c) => c.id).toSet();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [

@@ -977,7 +977,9 @@ class _ChallengeCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: challenge.progress,
-                    backgroundColor: AppColors.levelBg,
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.levelBgDark
+                        : AppColors.levelBg,
                     color: AppColors.primary,
                     minHeight: 6,
                   ),

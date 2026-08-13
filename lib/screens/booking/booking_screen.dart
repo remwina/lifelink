@@ -15,7 +15,6 @@ class BookingScreen extends StatelessWidget {
     final provider = context.watch<AppProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 280),
         switchInCurve: Curves.easeOut,

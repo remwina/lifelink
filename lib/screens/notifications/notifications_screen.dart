@@ -18,9 +18,7 @@ class NotificationsScreen extends StatelessWidget {
     final read = notifications.where((n) => n.isRead).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
         title: Text(
           'Alerts',
           style: GoogleFonts.dmSerifDisplay(
@@ -43,7 +41,7 @@ class NotificationsScreen extends StatelessWidget {
       ),
       body: RefreshIndicator(
         color: AppColors.primary,
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         onRefresh: () => provider.refreshNotifications(uid),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),

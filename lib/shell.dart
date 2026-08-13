@@ -70,7 +70,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: AppColors.background,
           body: Stack(
             children: List.generate(_screens.length, (i) {
               return AnimatedBuilder(

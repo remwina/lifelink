@@ -37,9 +37,7 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
         title: Row(
           children: [
             const Icon(Icons.admin_panel_settings_rounded,
@@ -345,7 +343,9 @@ class _BloodSupplyRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: entry.percentage / 100,
-                    backgroundColor: AppColors.levelBg,
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.levelBgDark
+                        : AppColors.levelBg,
                     color: entry.levelColor,
                     minHeight: 7,
                   ),

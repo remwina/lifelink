@@ -45,14 +45,12 @@ class HomeScreen extends StatelessWidget {
     final nextAppointment = provider.nextAppointment;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           // ── App bar ───────────────────────────────────────────────────────
           SliverAppBar(
             pinned: false,
             floating: true,
-            backgroundColor: AppColors.background,
             elevation: 0,
             scrolledUnderElevation: 0,
             titleSpacing: 16,

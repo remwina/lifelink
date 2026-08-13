@@ -26,9 +26,7 @@ class SlotPickerStep extends StatelessWidget {
         (provider.centers.isNotEmpty ? provider.centers.first : null);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
         title: Text(
           'Book Appointment',
           style: GoogleFonts.dmSerifDisplay(
@@ -154,7 +152,7 @@ void _showCenterPicker(
 ) {
   showModalBottomSheet<void>(
     context: context,
-    backgroundColor: AppColors.surface,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),

@@ -16,7 +16,6 @@ class ConfirmedStep extends StatelessWidget {
     final date = bookingDates[provider.selectedDateIndex];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
