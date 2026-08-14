@@ -136,7 +136,7 @@ class _MapScreenState extends State<MapScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.75),
+                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.75),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -222,11 +222,11 @@ class _MapPin extends StatelessWidget {
                 ? const EdgeInsets.symmetric(horizontal: 10, vertical: 6)
                 : const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : Colors.white,
+              color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(isSelected ? 20 : 10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black
+                  color: Theme.of(context).shadowColor
                       .withValues(alpha: isSelected ? 0.28 : 0.18),
                   blurRadius: isSelected ? 10 : 6,
                   offset: const Offset(0, 2),
@@ -268,7 +268,7 @@ class _MapPin extends StatelessWidget {
                             color: _statusColor,
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: Colors.white, width: 1.5),
+                                color: Theme.of(context).colorScheme.surface, width: 1.5),
                           ),
                         ),
                       ),
@@ -279,7 +279,7 @@ class _MapPin extends StatelessWidget {
           CustomPaint(
             size: const Size(10, 6),
             painter: _TailPainter(
-                color: isSelected ? AppColors.primary : Colors.white),
+                color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.surface),
           ),
         ],
       ),
@@ -316,11 +316,11 @@ class _SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.09),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.09),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -328,8 +328,10 @@ class _SearchBar extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
-        style:
-            GoogleFonts.dmSans(fontSize: 13, color: AppColors.textPrimary),
+        style: GoogleFonts.dmSans(
+          fontSize: 13,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: 'Search donation centers…',
           hintStyle:
@@ -381,11 +383,11 @@ class _FilterRow extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: f == selected
                           ? AppColors.primary
-                          : AppColors.surface,
+                          : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.07),
+                          color: Theme.of(context).shadowColor.withValues(alpha: 0.07),
                           blurRadius: 6,
                         ),
                       ],

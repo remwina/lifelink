@@ -71,25 +71,23 @@ class LifeLinkApp extends StatelessWidget {
         ChangeNotifierProvider(
             create: (_) => AppProvider(demoMode: demoMode)),
       ],
-      child: const _ThemedApp(),
+      child: _ThemedApp(firebaseReady: firebaseReady, demoMode: demoMode),
     );
   }
 }
 
 class _ThemedApp extends StatelessWidget {
-  const _ThemedApp();
+  final bool firebaseReady;
+  final bool demoMode;
+  
+  const _ThemedApp({required this.firebaseReady, required this.demoMode});
 
   @override
   Widget build(BuildContext context) {
     final appProvider = context.watch<AppProvider>();
-    final authProvider = context.watch<ap.AuthProvider>();
     
     final isDarkMode = appProvider.isDarkMode;
     debugPrint('🎨 _ThemedApp building with isDarkMode: $isDarkMode');
-    
-    // Determine if we should show the app or setup banner
-    final demoMode = appProvider.demoMode;
-    final firebaseReady = !demoMode; // If not in demo mode, Firebase should be ready
     
     return MaterialApp(
       title: 'LifeLink',
