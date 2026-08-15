@@ -99,8 +99,9 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     // OSM tile layer
                     TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate: provider.isDarkMode
+                          ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                          : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.lifelink.app',
                       maxZoom: 19,
                     ),
@@ -139,13 +140,13 @@ class _MapScreenState extends State<MapScreen> {
                           color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.75),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(
-                          '© OpenStreetMap contributors',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 8,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
+                         child: Text(
+                           '© OpenStreetMap contributors',
+                           style: GoogleFonts.dmSans(
+                             fontSize: 8,
+                             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                           ),
+                         ),
                       ),
                     ),
                   ],
@@ -198,14 +199,15 @@ class _MapPin extends StatelessWidget {
 
   const _MapPin({required this.center, required this.isSelected});
 
-  Color get _statusColor {
+  Color _statusColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (center.slotStatus) {
       case SlotStatus.open:
         return AppColors.success;
       case SlotStatus.limited:
         return AppColors.warning;
       case SlotStatus.full:
-        return AppColors.textMuted;
+        return isDark ? AppColors.textMutedDark : AppColors.textMuted;
     }
   }
 
@@ -264,12 +266,12 @@ class _MapPin extends StatelessWidget {
                         child: Container(
                           width: 8,
                           height: 8,
-                          decoration: BoxDecoration(
-                            color: _statusColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: Theme.of(context).colorScheme.surface, width: 1.5),
-                          ),
+                              decoration: BoxDecoration(
+                             color: _statusColor(context),
+                             shape: BoxShape.circle,
+                             border: Border.all(
+                                 color: Theme.of(context).colorScheme.surface, width: 1.5),
+                           ),
                         ),
                       ),
                     ],
@@ -332,19 +334,28 @@ class _SearchBar extends StatelessWidget {
           fontSize: 13,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        decoration: InputDecoration(
+         decoration: InputDecoration(
           hintText: 'Search donation centers…',
-          hintStyle:
-              GoogleFonts.dmSans(fontSize: 13, color: AppColors.textMuted),
-          prefixIcon: const Icon(Icons.search_rounded,
-              color: AppColors.textMuted, size: 20),
+          hintStyle: GoogleFonts.dmSans(
+              fontSize: 13,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textMutedDark
+                  : AppColors.textMuted),
+          prefixIcon: Icon(Icons.search_rounded,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textMutedDark
+                  : AppColors.textMuted,
+              size: 20),
           suffixIcon: ValueListenableBuilder<TextEditingValue>(
             valueListenable: controller,
             builder: (_, v, _) => v.text.isEmpty
                 ? const SizedBox.shrink()
                 : IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: AppColors.textMuted, size: 18),
+                    icon: Icon(Icons.close_rounded,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textMutedDark
+                            : AppColors.textMuted,
+                        size: 18),
                     onPressed: controller.clear,
                   ),
           ),
@@ -399,7 +410,9 @@ class _FilterRow extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: f == selected
                             ? Colors.white
-                            : AppColors.textSecondary,
+                            : Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -428,16 +441,22 @@ class _BottomCenterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppColors.surfaceDark : AppColors.surface;
+    final surfaceAltColor = isDark ? AppColors.surfaceAltDark : AppColors.surfaceAlt;
+    final textColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final secondaryTextColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.border;
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x1A000000),
+            color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
             blurRadius: 20,
-            offset: Offset(0, -4),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -450,7 +469,7 @@ class _BottomCenterList extends StatelessWidget {
             width: 36,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.border,
+              color: borderColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -466,7 +485,7 @@ class _BottomCenterList extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: textColor,
                   ),
                 ),
               ],
@@ -480,13 +499,13 @@ class _BottomCenterList extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.search_off_rounded,
-                            color: AppColors.textMuted, size: 36),
+                        Icon(Icons.search_off_rounded,
+                            color: isDark ? AppColors.textMutedDark : AppColors.textMuted, size: 36),
                         const SizedBox(height: 8),
                         Text(
                           'Try a different filter or search',
                           style: GoogleFonts.dmSans(
-                              fontSize: 13, color: AppColors.textMuted),
+                              fontSize: 13, color: isDark ? AppColors.textMutedDark : AppColors.textMuted),
                         ),
                       ],
                     ),
@@ -507,13 +526,13 @@ class _BottomCenterList extends StatelessWidget {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primaryLight
-                                : AppColors.surfaceAlt,
+                                ? (isDark ? AppColors.surfaceDark : AppColors.primaryLight)
+                                : surfaceAltColor,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.primary
-                                  : AppColors.border,
+                                  : borderColor,
                               width: isSelected ? 1.5 : 1,
                             ),
                           ),
@@ -544,7 +563,7 @@ class _BottomCenterList extends StatelessWidget {
                                     style: GoogleFonts.dmSans(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textSecondary,
+                                      color: secondaryTextColor,
                                     ),
                                   ),
                                 ],
@@ -557,7 +576,7 @@ class _BottomCenterList extends StatelessWidget {
                                 style: GoogleFonts.dmSans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: textColor,
                                 ),
                               ),
                               const SizedBox(height: 3),
@@ -567,7 +586,7 @@ class _BottomCenterList extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.dmSans(
                                   fontSize: 11,
-                                  color: AppColors.textSecondary,
+                                  color: secondaryTextColor,
                                 ),
                               ),
                               const Spacer(),
@@ -576,8 +595,8 @@ class _BottomCenterList extends StatelessWidget {
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: c.slotStatus == SlotStatus.open
-                                      ? AppColors.successLight
-                                      : AppColors.warningLight,
+                                      ? (isDark ? AppColors.successDark : AppColors.successLight)
+                                      : (isDark ? AppColors.warningLightDark : AppColors.warningLight),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
