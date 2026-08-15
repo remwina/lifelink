@@ -525,9 +525,9 @@ class _BottomCenterList extends StatelessWidget {
                           width: 200,
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? (isDark ? AppColors.surfaceDark : AppColors.primaryLight)
-                                : surfaceAltColor,
+                             color: isSelected
+                                 ? (isDark ? AppColors.primaryLightDark : AppColors.primaryLight)
+                                 : surfaceAltColor,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
@@ -546,7 +546,7 @@ class _BottomCenterList extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       color: isSelected
                                           ? AppColors.primary
-                                          : AppColors.primaryLight,
+                                          : (isDark ? AppColors.surfaceDark : AppColors.primaryLight),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(

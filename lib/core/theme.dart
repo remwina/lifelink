@@ -10,6 +10,7 @@ class AppColors {
   static const Color primary = Color(0xFFE53935);       // --color-primary
   static const Color primaryLight = Color(0xFFFFEBEE);  // --color-primary-light
   static const Color primaryDark = Color(0xFFC62828);   // --color-primary-dark
+  static const Color primaryLightDark = Color(0xFF4A1518); // dark variant of primaryLight
 
   // Neutrals - Light Mode
   static const Color background = Color(0xFFF5F0EB);    // --color-bg

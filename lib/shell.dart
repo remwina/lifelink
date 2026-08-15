@@ -131,9 +131,16 @@ class _LifeLinkNavBar extends StatelessWidget {
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border, width: 0.8)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.borderDark
+                : AppColors.border,
+            width: 0.8,
+          ),
+        ),
       ),
       padding: EdgeInsets.only(bottom: bottomInset),
       height: 72 + bottomInset,
@@ -221,8 +228,9 @@ class _NavItemState extends State<_NavItem>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final selected = widget.index == widget.currentIndex;
-    final color = selected ? AppColors.primary : AppColors.textMuted;
+    final color = selected ? AppColors.primary : (isDark ? AppColors.textMutedDark : AppColors.textMuted);
 
     return Expanded(
       child: GestureDetector(
@@ -339,6 +347,7 @@ class _BookItemState extends State<_BookItem>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final selected = widget.index == widget.currentIndex;
     return Expanded(
       child: GestureDetector(
@@ -360,7 +369,9 @@ class _BookItemState extends State<_BookItem>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: selected ? AppColors.primary : AppColors.primaryLight,
+                  color: selected
+                      ? AppColors.primary
+                      : (isDark ? AppColors.surfaceDark : AppColors.primaryLight),
                   shape: BoxShape.circle,
                   boxShadow: selected
                       ? [
@@ -385,7 +396,9 @@ class _BookItemState extends State<_BookItem>
                   fontSize: 10,
                   fontWeight:
                       selected ? FontWeight.w700 : FontWeight.w400,
-                  color: selected ? AppColors.primary : AppColors.textMuted,
+                  color: selected
+                      ? AppColors.primary
+                      : (isDark ? AppColors.textMutedDark : AppColors.textMuted),
                 ),
                 child: const Text('Book'),
               ),
