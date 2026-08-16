@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/booking.dart';
 import '../../../providers/app_provider.dart';
 import '../widgets/booking_progress.dart';
@@ -23,7 +24,7 @@ class ScreenerStep extends StatelessWidget {
           'Health Screener',
           style: GoogleFonts.dmSerifDisplay(
             fontSize: 20,
-            color: AppColors.textPrimary,
+            color: context.colorTextPrimary,
           ),
         ),
       ),
@@ -50,7 +51,7 @@ class ScreenerStep extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppColors.warningLight,
+                                color: context.isDark ? AppColors.warningLightDark : AppColors.warningLight,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: const Color(0xFFFFCC80),
@@ -121,15 +122,15 @@ class _QuestionCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: answer == null
-              ? AppColors.border
-              : answer!
-              ? const Color(0xFFA5D6A7)
-              : const Color(0xFFEF9A9A),
+        decoration: BoxDecoration(
+          color: context.colorSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: answer == null
+                ? context.colorBorder
+                : answer!
+                ? const Color(0xFFA5D6A7)
+                : const Color(0xFFEF9A9A),
         ),
       ),
       child: Column(
@@ -140,7 +141,7 @@ class _QuestionCard extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: context.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 10),
@@ -192,9 +193,9 @@ class _AnswerBtn extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? selColor.withValues(alpha: 0.12)
-                : AppColors.surfaceAlt,
+                : context.colorSurfaceAlt,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: selected ? selColor : AppColors.border),
+            border: Border.all(color: selected ? selColor : context.colorBorder),
           ),
           child: Center(
             child: Text(
@@ -202,7 +203,7 @@ class _AnswerBtn extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: selected ? selColor : AppColors.textSecondary,
+                color: selected ? selColor : context.colorTextSecondary,
               ),
             ),
           ),
@@ -226,7 +227,7 @@ class _ScreenerBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
+      color: context.colorBackground,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -237,7 +238,7 @@ class _ScreenerBottomBar extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.dangerLight,
+                color: context.isDark ? AppColors.dangerLightDark : AppColors.dangerLight,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -256,10 +257,10 @@ class _ScreenerBottomBar extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: (enabled && passed)
                     ? AppColors.primary
-                    : AppColors.border,
+                    : context.colorBorder,
                 foregroundColor: (enabled && passed)
                     ? Colors.white
-                    : AppColors.textMuted,
+                    : context.colorTextMuted,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

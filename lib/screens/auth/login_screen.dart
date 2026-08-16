@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../core/transitions.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../widgets/blood_drop_icon.dart';
@@ -145,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen>
                           'Welcome back',
                           style: GoogleFonts.dmSerifDisplay(
                             fontSize: 28,
-                            color: AppColors.textPrimary,
+                            color: context.colorTextPrimary,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -153,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen>
                           'Sign in to continue saving lives.',
                           style: GoogleFonts.dmSans(
                             fontSize: 14,
-                            color: AppColors.textSecondary,
+                            color: context.colorTextSecondary,
                           ),
                         ),
                         const SizedBox(height: 32),
@@ -167,9 +168,8 @@ class _LoginScreenState extends State<LoginScreen>
                           textInputAction: TextInputAction.next,
                           style: GoogleFonts.dmSans(
                               fontSize: 14,
-                              color: AppColors.textPrimary),
-                          decoration: _inputDecoration(
-                            hint: 'you@example.com',
+                              color: context.colorTextPrimary),
+                          decoration: _inputDecoration(context, hint: 'you@example.com',
                             icon: Icons.email_outlined,
                           ),
                           validator: (v) {
@@ -194,9 +194,8 @@ class _LoginScreenState extends State<LoginScreen>
                           onFieldSubmitted: (_) => _submit(),
                           style: GoogleFonts.dmSans(
                               fontSize: 14,
-                              color: AppColors.textPrimary),
-                          decoration: _inputDecoration(
-                            hint: '••••••••',
+                              color: context.colorTextPrimary),
+                          decoration: _inputDecoration(context, hint: '••••••••',
                             icon: Icons.lock_outline_rounded,
                           ).copyWith(
                             suffixIcon: IconButton(
@@ -204,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 _obscure
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppColors.textMuted,
+                                color: context.colorTextMuted,
                                 size: 20,
                               ),
                               onPressed: () =>
@@ -288,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 "Don't have an account? ",
                                 style: GoogleFonts.dmSans(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: context.colorTextSecondary,
                                 ),
                               ),
                               GestureDetector(
@@ -323,26 +322,26 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  InputDecoration _inputDecoration({
+  InputDecoration _inputDecoration(BuildContext context, {
     required String hint,
     required IconData icon,
   }) {
     return InputDecoration(
       hintText: hint,
       hintStyle:
-          GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted),
-      prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+          GoogleFonts.dmSans(fontSize: 14, color: context.colorTextMuted),
+      prefixIcon: Icon(icon, color: context.colorTextMuted, size: 20),
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: context.colorSurface,
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.colorBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.colorBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -372,7 +371,7 @@ class _FieldLabel extends StatelessWidget {
       style: GoogleFonts.dmSans(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: context.colorTextPrimary,
       ),
     );
   }

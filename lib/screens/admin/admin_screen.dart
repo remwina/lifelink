@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../models/blood_supply.dart';
 import '../../models/booking.dart';
 import '../../models/donation_center.dart';
@@ -47,15 +48,15 @@ class _AdminScreenState extends State<AdminScreen>
               'Admin Panel',
               style: GoogleFonts.dmSerifDisplay(
                 fontSize: 20,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout_rounded,
-                color: AppColors.textMuted, size: 20),
+            icon: Icon(Icons.logout_rounded,
+                color: context.colorTextMuted, size: 20),
             tooltip: 'Sign out',
             onPressed: () async {
               final confirmed = await showDialog<bool>(
@@ -88,7 +89,7 @@ class _AdminScreenState extends State<AdminScreen>
         bottom: TabBar(
           controller: _tab,
           labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textMuted,
+          unselectedLabelColor: context.colorTextMuted,
           indicatorColor: AppColors.primary,
           indicatorSize: TabBarIndicatorSize.label,
           labelStyle:
@@ -239,7 +240,7 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.warningLight,
+              color: context.isDark ? AppColors.warningLightDark : AppColors.warningLight,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFFFCC80)),
             ),
@@ -271,7 +272,7 @@ class _BloodSupplyTabState extends State<_BloodSupplyTab> {
                 'Updated ${_formatTime(_lastUpdated!)}',
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
-                  color: AppColors.textMuted,
+                  color: context.colorTextMuted,
                 ),
               ),
             ),
@@ -293,9 +294,9 @@ class _BloodSupplyRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Row(
         children: [
@@ -343,9 +344,7 @@ class _BloodSupplyRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: entry.percentage / 100,
-                    backgroundColor: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.levelBgDark
-                        : AppColors.levelBg,
+                    backgroundColor: context.colorLevelBg,
                     color: entry.levelColor,
                     minHeight: 7,
                   ),
@@ -442,13 +441,13 @@ class _QuickBtn extends StatelessWidget {
         padding:
             const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: context.colorSurfaceAlt,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.colorBorder),
         ),
         child: Text(label,
             style: GoogleFonts.dmSans(
-                fontSize: 11, color: AppColors.textSecondary)),
+                fontSize: 11, color: context.colorTextSecondary)),
       ),
     );
   }
@@ -685,7 +684,7 @@ class _CentersTabState extends State<_CentersTab> {
                   'Updated ${_formatTime(_lastUpdated!)}',
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
-                    color: AppColors.textMuted,
+                    color: context.colorTextMuted,
                   ),
                 ),
               ),
@@ -755,9 +754,9 @@ class _CenterCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -768,7 +767,7 @@ class _CenterCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.colorPrimaryLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.local_hospital_rounded,
@@ -784,14 +783,14 @@ class _CenterCard extends StatelessWidget {
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colorTextPrimary,
                       ),
                     ),
                     Text(
                       '${c.address} · ${c.distanceLabel}',
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: context.colorTextSecondary,
                       ),
                     ),
                   ],
@@ -800,7 +799,7 @@ class _CenterCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: context.colorBorder),
           const SizedBox(height: 14),
 
           // Slot status selector
@@ -808,7 +807,7 @@ class _CenterCard extends StatelessWidget {
               style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary)),
+                  color: context.colorTextSecondary)),
           const SizedBox(height: 8),
           Row(
             children: SlotStatus.values.map((s) {
@@ -826,10 +825,10 @@ class _CenterCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: selected
                             ? color.withValues(alpha: 0.12)
-                            : AppColors.surfaceAlt,
+                            : context.colorSurfaceAlt,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: selected ? color : AppColors.border,
+                          color: selected ? color : context.colorBorder,
                           width: selected ? 1.5 : 1,
                         ),
                       ),
@@ -841,7 +840,7 @@ class _CenterCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: selected
                                 ? color
-                                : AppColors.textSecondary,
+                                : context.colorTextSecondary,
                           ),
                         ),
                       ),
@@ -858,7 +857,7 @@ class _CenterCard extends StatelessWidget {
               style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary)),
+                  color: context.colorTextSecondary)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -867,15 +866,15 @@ class _CenterCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceAlt,
+                    color: context.colorSurfaceAlt,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: context.colorBorder),
                   ),
                   child: Text(
                     c.hours,
                     style: GoogleFonts.dmSans(
                       fontSize: 13,
-                      color: AppColors.textPrimary,
+                      color: context.colorTextPrimary,
                     ),
                   ),
                 ),
@@ -907,7 +906,7 @@ class _CenterCard extends StatelessWidget {
           style: GoogleFonts.dmSans(fontSize: 14),
           decoration: InputDecoration(
             hintText: 'e.g. Open until 8 PM',
-            hintStyle: GoogleFonts.dmSans(color: AppColors.textMuted),
+            hintStyle: GoogleFonts.dmSans(color: context.colorTextMuted),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1140,9 +1139,9 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.surfaceAlt,
+                color: context.colorSurfaceAlt,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.colorBorder),
               ),
               child: Row(
                 children: [
@@ -1151,7 +1150,7 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
                     style: GoogleFonts.dmSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
+                      color: context.colorTextSecondary,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -1252,7 +1251,7 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
                   'No upcoming appointments.',
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
-                    color: AppColors.textMuted,
+                    color: context.colorTextMuted,
                   ),
                 ),
               )
@@ -1273,7 +1272,7 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
                   'Updated ${_formatTime(_lastUpdated!)}',
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
-                    color: AppColors.textMuted,
+                    color: context.colorTextMuted,
                   ),
                 ),
               ),
@@ -1302,7 +1301,7 @@ class _AnalyticsTabState extends State<_AnalyticsTab> {
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text('Cancel',
                 style:
-                    GoogleFonts.dmSans(color: AppColors.textSecondary)),
+                    GoogleFonts.dmSans(color: context.colorTextSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -1369,16 +1368,16 @@ class _AppointmentAdminCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.colorPrimaryLight,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.calendar_today_rounded,
@@ -1394,21 +1393,21 @@ class _AppointmentAdminCard extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
                 Text(
                   '${appointment.date}  ·  ${appointment.time}',
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: context.colorTextSecondary,
                   ),
                 ),
                 Text(
                   'User: ${appointment.userId}',
                   style: GoogleFonts.dmSans(
                     fontSize: 10,
-                    color: AppColors.textMuted,
+                    color: context.colorTextMuted,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1437,14 +1436,14 @@ class _AppointmentAdminCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                   horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.surfaceAlt,
+                color: context.colorSurfaceAlt,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'Demo',
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
-                  color: AppColors.textMuted,
+                  color: context.colorTextMuted,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1473,16 +1472,16 @@ class _RangeChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surface,
+          color: selected ? AppColors.primary : context.colorSurface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+          border: Border.all(color: selected ? AppColors.primary : context.colorBorder),
         ),
         child: Text(
           label,
           style: GoogleFonts.dmSans(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: selected ? Colors.white : AppColors.textSecondary,
+            color: selected ? Colors.white : context.colorTextSecondary,
           ),
         ),
       ),
@@ -1508,9 +1507,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1521,7 +1520,7 @@ class _StatCard extends StatelessWidget {
             value,
             style: GoogleFonts.dmSerifDisplay(
               fontSize: 28,
-              color: AppColors.textPrimary,
+              color: context.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 4),
@@ -1529,7 +1528,7 @@ class _StatCard extends StatelessWidget {
             title,
             style: GoogleFonts.dmSans(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: context.colorTextSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1552,7 +1551,7 @@ class _SectionHeader extends StatelessWidget {
         style: GoogleFonts.dmSans(
           fontSize: 15,
           fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
+          color: context.colorTextPrimary,
         ),
       ),
     );
@@ -1574,12 +1573,12 @@ class _VerticalBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (bars.isEmpty) {
       return Text('No data available',
-          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+          style: GoogleFonts.dmSans(color: context.colorTextMuted));
     }
     final maxVal = bars.map((b) => b.value).reduce(math.max);
     if (maxVal == 0) {
       return Text('No bookings yet',
-          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+          style: GoogleFonts.dmSans(color: context.colorTextMuted));
     }
 
     return LayoutBuilder(
@@ -1601,7 +1600,7 @@ class _VerticalBarChart extends StatelessWidget {
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary,
+                        color: context.colorTextSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1618,7 +1617,7 @@ class _VerticalBarChart extends StatelessWidget {
                       bar.label,
                       style: GoogleFonts.dmSans(
                         fontSize: 10,
-                        color: AppColors.textMuted,
+                        color: context.colorTextMuted,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 1,
@@ -1643,12 +1642,12 @@ class _HorizontalBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (bars.isEmpty) {
       return Text('No data available',
-          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+          style: GoogleFonts.dmSans(color: context.colorTextMuted));
     }
     final maxVal = bars.map((b) => b.value).reduce(math.max);
     if (maxVal == 0) {
       return Text('No data available',
-          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+          style: GoogleFonts.dmSans(color: context.colorTextMuted));
     }
 
     return Column(
@@ -1665,7 +1664,7 @@ class _HorizontalBarChart extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1677,7 +1676,7 @@ class _HorizontalBarChart extends StatelessWidget {
                     Container(
                       height: 18,
                       decoration: BoxDecoration(
-                        color: AppColors.levelBg,
+                        color: context.colorLevelBg,
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
@@ -1704,7 +1703,7 @@ class _HorizontalBarChart extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary,
+                    color: context.colorTextSecondary,
                   ),
                 ),
               ),
@@ -1725,7 +1724,7 @@ class _StatusBar extends StatelessWidget {
     final total = statusCounts.values.fold(0, (a, b) => a + b);
     if (total == 0) {
       return Text('No appointments yet',
-          style: GoogleFonts.dmSans(color: AppColors.textMuted));
+          style: GoogleFonts.dmSans(color: context.colorTextMuted));
     }
 
     final upcoming = (statusCounts[AppointmentStatus.upcoming] ?? 0) / total;
@@ -1820,7 +1819,7 @@ class _LegendDot extends StatelessWidget {
           '$label ($count)',
           style: GoogleFonts.dmSans(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: context.colorTextSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),

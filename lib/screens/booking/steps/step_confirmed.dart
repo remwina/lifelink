@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/booking.dart';
 import '../../../providers/app_provider.dart';
 
@@ -30,7 +31,7 @@ class ConfirmedStep extends StatelessWidget {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: AppColors.successLight,
+                        color: context.isDark ? AppColors.successLightDark : AppColors.successLight,
                         shape: BoxShape.circle,
                         border: Border.all(
                             color: AppColors.success.withValues(alpha: 0.4),
@@ -45,7 +46,7 @@ class ConfirmedStep extends StatelessWidget {
                       'You\'re confirmed!',
                       style: GoogleFonts.dmSerifDisplay(
                         fontSize: 28,
-                        color: AppColors.textPrimary,
+                        color: context.colorTextPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -54,7 +55,7 @@ class ConfirmedStep extends StatelessWidget {
                       'Your appointment has been booked. See you there!',
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: context.colorTextSecondary,
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
@@ -65,9 +66,9 @@ class ConfirmedStep extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: context.colorSurface,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: context.colorBorder),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.05),
@@ -83,27 +84,27 @@ class ConfirmedStep extends StatelessWidget {
                             label: 'Center',
                             value: center?.name ?? '—',
                           ),
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
-                            child: Divider(color: AppColors.border, height: 1),
+                            child: Divider(color: context.colorBorder, height: 1),
                           ),
                           _TicketRow(
                             emoji: '📅',
                             label: 'Date',
                             value: date,
                           ),
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
-                            child: Divider(color: AppColors.border, height: 1),
+                            child: Divider(color: context.colorBorder, height: 1),
                           ),
                           _TicketRow(
                             emoji: '⏰',
                             label: 'Time',
                             value: slot?.time ?? '—',
                           ),
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
-                            child: Divider(color: AppColors.border, height: 1),
+                            child: Divider(color: context.colorBorder, height: 1),
                           ),
                           _TicketRow(
                             emoji: '📍',
@@ -120,7 +121,7 @@ class ConfirmedStep extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: context.colorPrimaryLight,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -212,14 +213,14 @@ class _TicketRow extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.dmSans(
-                  fontSize: 11, color: AppColors.textMuted),
+                  fontSize: 11, color: context.colorTextMuted),
             ),
             Text(
               value,
               style: GoogleFonts.dmSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
           ],

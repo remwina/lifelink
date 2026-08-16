@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/user_profile.dart';
 import '../../../widgets/app_card.dart';
 
@@ -23,7 +24,7 @@ class ImpactCard extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
               const Spacer(),
@@ -64,7 +65,7 @@ class _StreakBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
+         color: context.isDark ? AppColors.warningLightDark : const Color(0xFFFFF3E0),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFFFCC80)),
       ),
@@ -99,7 +100,7 @@ class _StatTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: context.colorSurfaceAlt,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -111,7 +112,7 @@ class _StatTile extends StatelessWidget {
                 value,
                 style: GoogleFonts.dmSerifDisplay(
                   fontSize: 22,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
             ),
@@ -121,7 +122,7 @@ class _StatTile extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSans(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                color: context.colorTextSecondary,
                 fontWeight: FontWeight.w500,
                 height: 1.3,
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/booking.dart';
 import '../../../models/donation_center.dart';
 import '../../../providers/app_provider.dart';
@@ -31,7 +32,7 @@ class SlotPickerStep extends StatelessWidget {
           'Book Appointment',
           style: GoogleFonts.dmSerifDisplay(
             fontSize: 20,
-            color: AppColors.textPrimary,
+            color: context.colorTextPrimary,
           ),
         ),
         automaticallyImplyLeading: false,
@@ -63,7 +64,7 @@ class SlotPickerStep extends StatelessWidget {
                               style: GoogleFonts.dmSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textSecondary,
+                                color: context.colorTextSecondary,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -82,15 +83,15 @@ class SlotPickerStep extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
+                                  color: context.colorSurface,
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: AppColors.border),
+                                  border: Border.all(color: context.colorBorder),
                                 ),
                                 child: Text(
                                   'Loading centers…',
                                   style: GoogleFonts.dmSans(
                                     fontSize: 13,
-                                    color: AppColors.textMuted,
+                                    color: context.colorTextMuted,
                                   ),
                                 ),
                               ),
@@ -102,7 +103,7 @@ class SlotPickerStep extends StatelessWidget {
                               style: GoogleFonts.dmSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textSecondary,
+                                color: context.colorTextSecondary,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -118,7 +119,7 @@ class SlotPickerStep extends StatelessWidget {
                               style: GoogleFonts.dmSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textSecondary,
+                                color: context.colorTextSecondary,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -168,7 +169,7 @@ void _showCenterPicker(
                 'Select Donation Center',
                 style: GoogleFonts.dmSerifDisplay(
                   fontSize: 18,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -181,7 +182,7 @@ void _showCenterPicker(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: context.colorPrimaryLight,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -195,14 +196,14 @@ void _showCenterPicker(
                     style: GoogleFonts.dmSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.colorTextPrimary,
                     ),
                   ),
                   subtitle: Text(
                     '${c.address} · ${c.hours}',
                     style: GoogleFonts.dmSans(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: context.colorTextSecondary,
                     ),
                   ),
                   onTap: () {
@@ -232,7 +233,7 @@ class _CenterSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colorSurface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.primary, width: 1.5),
         ),
@@ -241,7 +242,7 @@ class _CenterSelector extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.colorPrimaryLight,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
@@ -260,14 +261,14 @@ class _CenterSelector extends StatelessWidget {
                     style: GoogleFonts.dmSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.colorTextPrimary,
                     ),
                   ),
                   Text(
                     '${selected.address} · ${selected.hours}',
                     style: GoogleFonts.dmSans(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: context.colorTextSecondary,
                     ),
                   ),
                 ],
@@ -275,7 +276,7 @@ class _CenterSelector extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: onTap != null ? AppColors.textMuted : AppColors.border,
+              color: onTap != null ? context.colorTextMuted : context.colorBorder,
               size: 20,
             ),
           ],
@@ -312,10 +313,10 @@ class DatePickerWidget extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: selected ? AppColors.primary : AppColors.surface,
+                color: selected ? AppColors.primary : context.colorSurface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: selected ? AppColors.primary : AppColors.border,
+                  color: selected ? AppColors.primary : context.colorBorder,
                 ),
               ),
               child: Column(
@@ -327,7 +328,7 @@ class DatePickerWidget extends StatelessWidget {
                       fontSize: 11,
                       color: selected
                           ? Colors.white.withValues(alpha: 0.85)
-                          : AppColors.textMuted,
+                          : context.colorTextMuted,
                     ),
                   ),
                   Text(
@@ -335,7 +336,7 @@ class DatePickerWidget extends StatelessWidget {
                     style: GoogleFonts.dmSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: selected ? Colors.white : AppColors.textPrimary,
+                      color: selected ? Colors.white : context.colorTextPrimary,
                     ),
                   ),
                 ],
@@ -372,16 +373,16 @@ class _SlotGrid extends StatelessWidget {
             Color bg, fg, border;
             if (isDisabled) {
               bg = const Color(0xFFF0EDE8);
-              fg = AppColors.textMuted;
-              border = AppColors.border;
+              fg = context.colorTextMuted;
+              border = context.colorBorder;
             } else if (isSelected) {
               bg = AppColors.primary;
               fg = Colors.white;
               border = AppColors.primary;
             } else {
-              bg = AppColors.surface;
-              fg = AppColors.textPrimary;
-              border = AppColors.border;
+              bg = context.colorSurface;
+              fg = context.colorTextPrimary;
+              border = context.colorBorder;
             }
 
             return GestureDetector(
@@ -425,15 +426,15 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
+      color: context.colorBackground,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           onPressed: enabled ? onNext : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: enabled ? AppColors.primary : AppColors.border,
-            foregroundColor: enabled ? Colors.white : AppColors.textMuted,
+            backgroundColor: enabled ? AppColors.primary : context.colorBorder,
+            foregroundColor: enabled ? Colors.white : context.colorTextMuted,
             padding: const EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),

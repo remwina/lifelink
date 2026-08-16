@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/donation_center.dart';
 import '../../../providers/app_provider.dart';
 import '../../../widgets/app_card.dart';
@@ -31,7 +32,7 @@ class NearbyCentersCard extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+               color: context.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -50,7 +51,7 @@ class NearbyCentersCard extends StatelessWidget {
                 'No centers found nearby.',
                 style: GoogleFonts.dmSans(
                   fontSize: 13,
-                  color: AppColors.textMuted,
+                  color: context.colorTextMuted,
                 ),
               ),
             )
@@ -61,9 +62,9 @@ class NearbyCentersCard extends StatelessWidget {
                 children: [
                   _CenterRow(center: e.value, onTap: () => onBook(e.value)),
                   if (!isLast)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Divider(height: 1, color: AppColors.border),
+                      child: Divider(height: 1, color: context.colorBorder),
                     ),
                 ],
               );
@@ -80,14 +81,14 @@ class _CenterRow extends StatelessWidget {
 
   const _CenterRow({required this.center, required this.onTap});
 
-  Color get _slotColor {
+  Color _slotColor(BuildContext context) {
     switch (center.slotStatus) {
       case SlotStatus.open:
         return AppColors.success;
       case SlotStatus.limited:
         return AppColors.warning;
       case SlotStatus.full:
-        return AppColors.textMuted;
+        return context.colorTextMuted;
     }
   }
 
@@ -103,7 +104,7 @@ class _CenterRow extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.colorPrimaryLight,
               borderRadius: BorderRadius.circular(11),
             ),
             child: const Icon(Icons.local_hospital_rounded,
@@ -122,7 +123,7 @@ class _CenterRow extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
                 const SizedBox(height: 1),
@@ -132,7 +133,7 @@ class _CenterRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: context.colorTextSecondary,
                   ),
                 ),
               ],
@@ -148,7 +149,7 @@ class _CenterRow extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
               const SizedBox(height: 1),
@@ -157,7 +158,7 @@ class _CenterRow extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: _slotColor,
+                   color: _slotColor(context),
                 ),
               ),
             ],

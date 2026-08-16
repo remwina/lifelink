@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../core/transitions.dart';
 import '../../models/booking.dart';
 import '../../models/user_profile.dart';
@@ -74,8 +75,8 @@ class HomeScreen extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined,
-                        color: AppColors.textSecondary, size: 22),
+                    icon: Icon(Icons.notifications_outlined,
+                        color: context.colorTextSecondary, size: 22),
                     onPressed: () => provider.setIndex(1),
                   ),
                   if (provider.unreadCount > 0)
@@ -113,7 +114,7 @@ class HomeScreen extends StatelessWidget {
                         _greeting(),
                         style: GoogleFonts.dmSans(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: context.colorTextSecondary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -126,7 +127,7 @@ class HomeScreen extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 26,
-                                color: AppColors.textPrimary,
+                                color: context.colorTextPrimary,
                               ),
                             ),
                           ),
@@ -135,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: context.colorPrimaryLight,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -299,7 +300,7 @@ class _PulseButtonState extends State<_PulseButton>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.colorPrimaryLight,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -357,7 +358,7 @@ class _CriticalBloodAlert extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.dangerLight,
+        color: context.isDark ? AppColors.dangerLightDark : AppColors.dangerLight,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
             color: AppColors.danger.withValues(alpha: 0.4), width: 1.5),
@@ -440,7 +441,7 @@ class _QuickActionsRow extends StatelessWidget {
           icon: Icons.calendar_month_rounded,
           label: 'Book',
           color: AppColors.primary,
-          bg: AppColors.primaryLight,
+          bg: context.colorPrimaryLight,
           onTap: onBook,
         ),
         const SizedBox(width: 10),
@@ -448,7 +449,7 @@ class _QuickActionsRow extends StatelessWidget {
           icon: Icons.map_rounded,
           label: 'Find Center',
           color: AppColors.success,
-          bg: AppColors.successLight,
+bg: context.isDark ? AppColors.successLightDark : AppColors.successLight,
           onTap: onMap,
         ),
         const SizedBox(width: 10),
@@ -456,7 +457,7 @@ class _QuickActionsRow extends StatelessWidget {
           icon: Icons.history_rounded,
           label: 'History',
           color: AppColors.accent,
-          bg: const Color(0xFFFFF3E0),
+           bg: context.isDark ? AppColors.warningLightDark : const Color(0xFFFFF3E0),
           onTap: onHistory,
         ),
       ],
@@ -488,9 +489,9 @@ class _QuickAction extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.colorSurface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.colorBorder),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -506,7 +507,7 @@ class _QuickAction extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
             ],
@@ -531,7 +532,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
             color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
@@ -544,7 +545,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.colorPrimaryLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.calendar_today_rounded,
@@ -559,7 +560,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                       'Upcoming Appointment',
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
-                        color: AppColors.textMuted,
+                        color: context.colorTextMuted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -571,14 +572,14 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                       style: GoogleFonts.dmSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colorTextPrimary,
                       ),
                     ),
                     Text(
                       '${appointment.date}  ·  ${appointment.time}',
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: context.colorTextSecondary,
                       ),
                     ),
                   ],
@@ -588,7 +589,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.successLight,
+                   color: context.isDark ? AppColors.successLightDark : AppColors.successLight,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -660,7 +661,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'Keep it',
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+              style: GoogleFonts.dmSans(color: context.colorTextSecondary),
             ),
           ),
           TextButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/booking.dart';
 import '../../../providers/app_provider.dart';
 import '../../../providers/auth_provider.dart' as ap;
@@ -29,7 +30,7 @@ class ReviewStep extends StatelessWidget {
           'Review Booking',
           style: GoogleFonts.dmSerifDisplay(
             fontSize: 20,
-            color: AppColors.textPrimary,
+            color: context.colorTextPrimary,
           ),
         ),
       ),
@@ -58,9 +59,9 @@ class ReviewStep extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: AppColors.surface,
+                                color: context.colorSurface,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.border),
+                                border: Border.all(color: context.colorBorder),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +71,7 @@ class ReviewStep extends StatelessWidget {
                                     style: GoogleFonts.dmSans(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: context.colorTextPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 14),
@@ -113,10 +114,14 @@ class ReviewStep extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: AppColors.successLight,
+                                color: context.isDark
+                                    ? AppColors.successLightDark
+                                    : AppColors.successLight,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: const Color(0xFFA5D6A7),
+                                  color: context.isDark
+                                      ? AppColors.successLightDark
+                                      : const Color(0xFFA5D6A7),
                                 ),
                               ),
                               child: Column(
@@ -138,7 +143,8 @@ class ReviewStep extends StatelessWidget {
                                     'Wear clothing with sleeves that roll up easily',
                                   ].map(
                                     (item) => Padding(
-                                      padding: const EdgeInsets.only(top: 6),
+                                      padding:
+                                          const EdgeInsets.only(top: 6),
                                       child: Row(
                                         children: [
                                           const Icon(
@@ -166,8 +172,9 @@ class ReviewStep extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      color: AppColors.background,
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      color: context.colorSurface,
+                      padding:
+                          const EdgeInsets.fromLTRB(16, 12, 16, 16),
                       child: Column(
                         children: [
                           if (provider.bookingError != null)
@@ -175,7 +182,9 @@ class ReviewStep extends StatelessWidget {
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.dangerLight,
+                                color: context.isDark
+                                    ? AppColors.dangerLightDark
+                                    : AppColors.dangerLight,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
@@ -252,7 +261,7 @@ class _ReviewRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-            color: AppColors.primaryLight,
+            color: context.colorPrimaryLight,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: AppColors.primary, size: 16),
@@ -266,7 +275,7 @@ class _ReviewRow extends StatelessWidget {
                 label,
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
-                  color: AppColors.textMuted,
+                  color: context.colorTextMuted,
                 ),
               ),
               Text(
@@ -274,7 +283,7 @@ class _ReviewRow extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
             ],

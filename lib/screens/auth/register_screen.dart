@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../widgets/blood_drop_icon.dart';
 
@@ -103,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           'Create account',
                           style: GoogleFonts.dmSerifDisplay(
                             fontSize: 28,
-                            color: AppColors.textPrimary,
+                            color: context.colorTextPrimary,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -111,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           'Join LifeLink and start saving lives.',
                           style: GoogleFonts.dmSans(
                             fontSize: 14,
-                            color: AppColors.textSecondary,
+                            color: context.colorTextSecondary,
                           ),
                         ),
                         const SizedBox(height: 28),
@@ -123,9 +124,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _nameCtrl,
                           textCapitalization: TextCapitalization.words,
                           textInputAction: TextInputAction.next,
-                          style: _inputStyle(),
-                          decoration: _inputDecoration(
-                            hint: 'Maria Santos',
+                          style: _inputStyle(context),
+                          decoration: _inputDecoration(context, hint: 'Maria Santos',
                             icon: Icons.person_outline_rounded,
                           ),
                           validator: (v) {
@@ -144,9 +144,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _emailCtrl,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
-                          style: _inputStyle(),
-                          decoration: _inputDecoration(
-                            hint: 'you@example.com',
+                          style: _inputStyle(context),
+                          decoration: _inputDecoration(context, hint: 'you@example.com',
                             icon: Icons.email_outlined,
                           ),
                           validator: (v) {
@@ -178,9 +177,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _passCtrl,
                           obscureText: _obscure,
                           textInputAction: TextInputAction.next,
-                          style: _inputStyle(),
-                          decoration: _inputDecoration(
-                            hint: 'At least 6 characters',
+                          style: _inputStyle(context),
+                          decoration: _inputDecoration(context, hint: 'At least 6 characters',
                             icon: Icons.lock_outline_rounded,
                           ).copyWith(
                             suffixIcon: IconButton(
@@ -188,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 _obscure
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppColors.textMuted,
+                                color: context.colorTextMuted,
                                 size: 20,
                               ),
                               onPressed: () =>
@@ -212,9 +210,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: _obscureConfirm,
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) => _submit(),
-                          style: _inputStyle(),
-                          decoration: _inputDecoration(
-                            hint: 'Re-enter password',
+                          style: _inputStyle(context),
+                          decoration: _inputDecoration(context, hint: 'Re-enter password',
                             icon: Icons.lock_outline_rounded,
                           ).copyWith(
                             suffixIcon: IconButton(
@@ -222,7 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 _obscureConfirm
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppColors.textMuted,
+                                color: context.colorTextMuted,
                                 size: 20,
                               ),
                               onPressed: () => setState(
@@ -280,7 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 'Already have an account? ',
                                 style: GoogleFonts.dmSans(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: context.colorTextSecondary,
                                 ),
                               ),
                               GestureDetector(
@@ -309,29 +306,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  TextStyle _inputStyle() => GoogleFonts.dmSans(
-      fontSize: 14, color: AppColors.textPrimary);
+  TextStyle _inputStyle(BuildContext context) => GoogleFonts.dmSans(
+      fontSize: 14, color: context.colorTextPrimary);
 
-  InputDecoration _inputDecoration({
+  InputDecoration _inputDecoration(BuildContext context, {
     required String hint,
     required IconData icon,
   }) {
     return InputDecoration(
       hintText: hint,
       hintStyle:
-          GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted),
-      prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+          GoogleFonts.dmSans(fontSize: 14, color: context.colorTextMuted),
+      prefixIcon: Icon(icon, color: context.colorTextMuted, size: 20),
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: context.colorSurface,
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.colorBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.colorBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -375,10 +372,10 @@ class _BloodTypeSelector extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : AppColors.surface,
+              color: isSelected ? AppColors.primary : context.colorSurface,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.border,
+                color: isSelected ? AppColors.primary : context.colorBorder,
                 width: isSelected ? 1.5 : 1,
               ),
             ),
@@ -388,7 +385,7 @@ class _BloodTypeSelector extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color:
-                    isSelected ? Colors.white : AppColors.textSecondary,
+                    isSelected ? Colors.white : context.colorTextSecondary,
               ),
             ),
           ),
@@ -409,7 +406,7 @@ class _FieldLabel extends StatelessWidget {
       style: GoogleFonts.dmSans(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: context.colorTextPrimary,
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../models/blood_supply.dart';
 import '../../models/donation_center.dart';
 import '../../providers/app_provider.dart';
@@ -105,8 +106,8 @@ class _AlertSheet extends StatelessWidget {
     final centersCount = openCenters.length.toString();
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.colorSurface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -118,7 +119,7 @@ class _AlertSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.border,
+              color: context.colorBorder,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -201,21 +202,21 @@ class _AlertSheet extends StatelessWidget {
                     _AlertStat(
                       value: bloodType,
                       label: 'Blood type needed',
-                      bgColor: AppColors.dangerLight,
+                      bgColor: context.isDark ? AppColors.dangerLightDark : AppColors.dangerLight,
                       textColor: AppColors.danger,
                     ),
                     const SizedBox(width: 10),
                     _AlertStat(
                       value: supplyPct,
                       label: 'Supply remaining',
-                      bgColor: AppColors.warningLight,
+                      bgColor: context.isDark ? AppColors.warningLightDark : AppColors.warningLight,
                       textColor: AppColors.warning,
                     ),
                     const SizedBox(width: 10),
                     _AlertStat(
                       value: centersCount,
                       label: 'Centers open',
-                      bgColor: AppColors.successLight,
+                      bgColor: context.isDark ? AppColors.successLightDark : AppColors.successLight,
                       textColor: AppColors.success,
                     ),
                   ],
@@ -231,7 +232,7 @@ class _AlertSheet extends StatelessWidget {
                         'Supply is critically low at $supplyPct. Your donation can save lives.',
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.colorTextSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -242,16 +243,16 @@ class _AlertSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceAlt,
+                      color: context.colorSurfaceAlt,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: context.colorBorder),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: context.colorPrimaryLight,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.location_on_rounded,
@@ -267,14 +268,14 @@ class _AlertSheet extends StatelessWidget {
                                 style: GoogleFonts.dmSans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: context.colorTextPrimary,
                                 ),
                               ),
                               Text(
                                 '${nearest.distanceLabel} away · ${nearest.slotLabel}',
                                 style: GoogleFonts.dmSans(
                                   fontSize: 11,
-                                  color: AppColors.textSecondary,
+                                  color: context.colorTextSecondary,
                                 ),
                               ),
                             ],
@@ -324,7 +325,7 @@ class _AlertSheet extends StatelessWidget {
                   child: TextButton(
                     onPressed: onDismiss,
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                      foregroundColor: context.colorTextSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(

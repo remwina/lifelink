@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 
 class BookingProgress extends StatelessWidget {
   final int step; // 0-indexed 0..2
@@ -19,8 +20,8 @@ class BookingProgress extends StatelessWidget {
           final done = step > leftStep;
           return Expanded(
             child: Container(
-              height: 2,
-              color: done ? AppColors.primary : AppColors.border,
+               height: 2,
+               color: done ? AppColors.primary : context.colorBorder,
             ),
           );
         }
@@ -57,8 +58,8 @@ class _StepCircle extends StatelessWidget {
         ? AppColors.success
         : active
             ? AppColors.primary
-            : AppColors.border;
-    final fg = (done || active) ? Colors.white : AppColors.textMuted;
+            : context.colorBorder;
+    final fg = (done || active) ? Colors.white : context.colorTextMuted;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -84,7 +85,7 @@ class _StepCircle extends StatelessWidget {
           style: GoogleFonts.dmSans(
             fontSize: 10,
             fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-            color: active ? AppColors.primary : AppColors.textMuted,
+            color: active ? AppColors.primary : context.colorTextMuted,
           ),
         ),
       ],

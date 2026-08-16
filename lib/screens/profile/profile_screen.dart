@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../models/user_profile.dart';
@@ -91,9 +92,9 @@ class _ProfileHeader extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.logout_rounded,
-            color: AppColors.textMuted,
+            color: context.colorTextMuted,
             size: 20,
           ),
           tooltip: 'Sign out',
@@ -141,7 +142,7 @@ class _ProfileHeader extends StatelessWidget {
           child: TabBar(
             controller: tabController,
             labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textMuted,
+            unselectedLabelColor: context.colorTextMuted,
             indicatorColor: AppColors.primary,
             indicatorSize: TabBarIndicatorSize.label,
             labelStyle: GoogleFonts.dmSans(
@@ -197,7 +198,7 @@ class _DonorCardDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colorSurface,
           borderRadius: BorderRadius.circular(26),
         ),
         child: Column(
@@ -209,7 +210,7 @@ class _DonorCardDialog extends StatelessWidget {
               'LifeLink donor card',
               style: GoogleFonts.dmSerifDisplay(
                 fontSize: 22,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -217,7 +218,7 @@ class _DonorCardDialog extends StatelessWidget {
               'Show this at a donation center',
               style: GoogleFonts.dmSans(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.colorTextSecondary,
               ),
             ),
             const SizedBox(height: 18),
@@ -229,9 +230,9 @@ class _DonorCardDialog extends StatelessWidget {
                 eyeShape: QrEyeShape.square,
                 color: AppColors.primary,
               ),
-              dataModuleStyle: const QrDataModuleStyle(
+              dataModuleStyle: QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
             const SizedBox(height: 14),
@@ -246,7 +247,7 @@ class _DonorCardDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.colorPrimaryLight,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -295,7 +296,7 @@ class _ProfileInfo extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 42,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: context.colorPrimaryLight,
                 child: Text(
                   _initials(user.name),
                   style: GoogleFonts.dmSerifDisplay(
@@ -328,7 +329,7 @@ class _ProfileInfo extends StatelessWidget {
             user.name,
             style: GoogleFonts.dmSerifDisplay(
               fontSize: 22,
-              color: AppColors.textPrimary,
+              color: context.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 4),
@@ -341,7 +342,7 @@ class _ProfileInfo extends StatelessWidget {
                   vertical: 3,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.colorPrimaryLight,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -399,7 +400,7 @@ class _ProfileInfo extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.colorPrimaryLight,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                   color: AppColors.primary.withValues(alpha: 0.15)),
@@ -451,14 +452,14 @@ class _ProfileStat extends StatelessWidget {
             value,
             style: GoogleFonts.dmSerifDisplay(
               fontSize: 22,
-              color: AppColors.textPrimary,
+              color: context.colorTextPrimary,
             ),
           ),
           Text(
             label,
             style: GoogleFonts.dmSans(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: context.colorTextSecondary,
             ),
           ),
         ],
@@ -470,7 +471,7 @@ class _ProfileStat extends StatelessWidget {
 class _ProfileDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(height: 36, width: 1, color: AppColors.border);
+    return Container(height: 36, width: 1, color: context.colorBorder);
   }
 }
 
@@ -490,14 +491,14 @@ class _AppointmentsTab extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.calendar_month_rounded,
-                  color: AppColors.textMuted, size: 48),
+              Icon(Icons.calendar_month_rounded,
+                  color: context.colorTextMuted, size: 48),
               const SizedBox(height: 12),
               Text(
                 'No appointments yet',
                 style: GoogleFonts.dmSerifDisplay(
                   fontSize: 18,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
               const SizedBox(height: 6),
@@ -506,7 +507,7 @@ class _AppointmentsTab extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: context.colorTextSecondary,
                 ),
               ),
             ],
@@ -535,25 +536,26 @@ class _AppointmentCard extends StatelessWidget {
 
   const _AppointmentCard({required this.appointment, required this.uid});
 
-  Color _statusColor(AppointmentStatus status) {
+  Color _statusColor(BuildContext context, AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.upcoming:
         return AppColors.primary;
       case AppointmentStatus.completed:
         return AppColors.success;
       case AppointmentStatus.cancelled:
-        return AppColors.textMuted;
+        return context.colorTextMuted;
     }
   }
 
-  Color _statusBg(AppointmentStatus status) {
+  Color _statusBg(BuildContext context, AppointmentStatus status) {
+    final isDark = context.isDark;
     switch (status) {
       case AppointmentStatus.upcoming:
-        return AppColors.primaryLight;
+        return context.colorPrimaryLight;
       case AppointmentStatus.completed:
-        return AppColors.successLight;
+        return isDark ? AppColors.successLightDark : AppColors.successLight;
       case AppointmentStatus.cancelled:
-        return AppColors.surfaceAlt;
+        return context.colorSurfaceAlt;
     }
   }
 
@@ -577,9 +579,9 @@ class _AppointmentCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,12 +592,12 @@ class _AppointmentCard extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: _statusBg(appointment.status),
+                  color: _statusBg(context, appointment.status),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.local_hospital_rounded,
-                  color: _statusColor(appointment.status),
+                  color: _statusColor(context, appointment.status),
                   size: 20,
                 ),
               ),
@@ -609,24 +611,23 @@ class _AppointmentCard extends StatelessWidget {
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colorTextPrimary,
                       ),
                     ),
                     Text(
                       appointment.centerAddress,
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: context.colorTextSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _statusBg(appointment.status),
+                  color: _statusBg(context, appointment.status),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -634,7 +635,7 @@ class _AppointmentCard extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: _statusColor(appointment.status),
+                    color: _statusColor(context, appointment.status),
                   ),
                 ),
               ),
@@ -644,32 +645,32 @@ class _AppointmentCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: context.colorBackground,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today_rounded,
-                    size: 14, color: AppColors.textMuted),
+                Icon(Icons.calendar_today_rounded,
+                    size: 14, color: context.colorTextMuted),
                 const SizedBox(width: 6),
                 Text(
                   appointment.date,
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Icon(Icons.access_time_rounded,
-                    size: 14, color: AppColors.textMuted),
+                Icon(Icons.access_time_rounded,
+                    size: 14, color: context.colorTextMuted),
                 const SizedBox(width: 6),
                 Text(
                   appointment.time,
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
               ],
@@ -735,7 +736,7 @@ class _AppointmentCard extends StatelessWidget {
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'Keep it',
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+              style: GoogleFonts.dmSans(color: context.colorTextSecondary),
             ),
           ),
           TextButton(
@@ -787,15 +788,15 @@ class _HistoryTab extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.history_rounded,
-                  color: AppColors.textMuted, size: 48),
+              Icon(Icons.history_rounded,
+                  color: context.colorTextMuted, size: 48),
               const SizedBox(height: 12),
               Text(
                 'No donations yet',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.dmSerifDisplay(
                   fontSize: 18,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
               const SizedBox(height: 6),
@@ -804,7 +805,7 @@ class _HistoryTab extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: context.colorTextSecondary,
                 ),
               ),
             ],
@@ -836,9 +837,9 @@ class _HistoryCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Row(
         children: [
@@ -846,7 +847,7 @@ class _HistoryCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.colorPrimaryLight,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -865,14 +866,14 @@ class _HistoryCard extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
                 Text(
                   '${history.type} · ${history.date}',
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: context.colorTextSecondary,
                   ),
                 ),
               ],
@@ -881,7 +882,9 @@ class _HistoryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.successLight,
+              color: context.isDark
+                  ? AppColors.successLightDark
+                  : AppColors.successLight,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -932,9 +935,9 @@ class _ChallengeCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colorSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colorBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -947,7 +950,7 @@ class _ChallengeCard extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
               ),
@@ -966,7 +969,7 @@ class _ChallengeCard extends StatelessWidget {
             challenge.description,
             style: GoogleFonts.dmSans(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: context.colorTextSecondary,
             ),
           ),
           const SizedBox(height: 10),
@@ -977,9 +980,7 @@ class _ChallengeCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: challenge.progress,
-                    backgroundColor: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.levelBgDark
-                        : AppColors.levelBg,
+                    backgroundColor: context.colorLevelBg,
                     color: AppColors.primary,
                     minHeight: 6,
                   ),
@@ -991,7 +992,7 @@ class _ChallengeCard extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: context.colorTextSecondary,
                 ),
               ),
             ],
@@ -1039,12 +1040,12 @@ class _BadgeTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: badge.earned ? AppColors.surface : AppColors.surfaceAlt,
+        color: badge.earned ? context.colorSurface : context.colorSurfaceAlt,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: badge.earned
               ? AppColors.primary.withValues(alpha: 0.3)
-              : AppColors.border,
+              : context.colorBorder,
         ),
       ),
       child: Column(
@@ -1068,7 +1069,9 @@ class _BadgeTile extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: badge.earned ? AppColors.textPrimary : AppColors.textMuted,
+              color: badge.earned
+                  ? context.colorTextPrimary
+                  : context.colorTextMuted,
             ),
           ),
           if (!badge.earned) ...[
@@ -1077,7 +1080,7 @@ class _BadgeTile extends StatelessWidget {
               'Locked',
               style: GoogleFonts.dmSans(
                 fontSize: 9,
-                color: AppColors.textMuted,
+                color: context.colorTextMuted,
               ),
             ),
           ],
@@ -1116,8 +1119,10 @@ class _CommunityTab extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFE3E5), Color(0xFFFFF3D8)],
+            gradient: LinearGradient(
+              colors: context.isDark
+                  ? [AppColors.primaryLightDark, AppColors.warningLightDark]
+                  : [const Color(0xFFFFE3E5), const Color(0xFFFFF3D8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -1135,7 +1140,7 @@ class _CommunityTab extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
               ),
@@ -1150,7 +1155,7 @@ class _CommunityTab extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
             const Spacer(),
@@ -1158,7 +1163,7 @@ class _CommunityTab extends StatelessWidget {
               'This year',
               style: GoogleFonts.dmSans(
                 fontSize: 11,
-                color: AppColors.textMuted,
+                color: context.colorTextMuted,
               ),
             ),
           ],
@@ -1177,7 +1182,7 @@ class _CommunityTab extends StatelessWidget {
           textAlign: TextAlign.center,
           style: GoogleFonts.dmSans(
             fontSize: 10,
-            color: AppColors.textMuted,
+            color: context.colorTextMuted,
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -1211,12 +1216,12 @@ class _DonorRankCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isCurrentUser ? AppColors.primaryLight : AppColors.surface,
+        color: isCurrentUser ? context.colorPrimaryLight : context.colorSurface,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: isCurrentUser
               ? AppColors.primary.withValues(alpha: 0.35)
-              : AppColors.border,
+              : context.colorBorder,
         ),
       ),
       child: Row(
@@ -1229,15 +1234,16 @@ class _DonorRankCard extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 fontSize: rank <= 3 ? 18 : 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
+                color: context.colorTextSecondary,
               ),
             ),
           ),
           const SizedBox(width: 10),
           CircleAvatar(
             radius: 19,
-            backgroundColor:
-                isCurrentUser ? Colors.white : AppColors.surfaceAlt,
+            backgroundColor: isCurrentUser
+                ? (context.isDark ? AppColors.surfaceDark : Colors.white)
+                : context.colorSurfaceAlt,
             child:
                 Text(donor.emoji, style: const TextStyle(fontSize: 18)),
           ),
@@ -1249,7 +1255,7 @@ class _DonorRankCard extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
           ),
@@ -1258,7 +1264,7 @@ class _DonorRankCard extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: isCurrentUser ? AppColors.primary : AppColors.textMuted,
+              color: isCurrentUser ? AppColors.primary : context.colorTextMuted,
             ),
           ),
         ],
@@ -1288,7 +1294,7 @@ class _SettingsTab extends StatelessWidget {
           'Settings',
           style: GoogleFonts.dmSerifDisplay(
             fontSize: 20,
-            color: AppColors.textPrimary,
+            color: context.colorTextPrimary,
           ),
         ),
         const SizedBox(height: 16),
@@ -1311,7 +1317,7 @@ class _SettingsTab extends StatelessWidget {
         ),
         _SettingTile(
           icon: Icons.dark_mode_rounded,
-          iconColor: AppColors.textSecondary,
+          iconColor: context.colorTextSecondary,
           title: 'Dark mode',
           trailing: Switch(
             value: context.watch<AppProvider>().isDarkMode,
@@ -1336,7 +1342,7 @@ class _SettingsTab extends StatelessWidget {
         ),
         _SettingTile(
           icon: Icons.info_rounded,
-          iconColor: AppColors.textSecondary,
+          iconColor: context.colorTextSecondary,
           title: 'About LifeLink',
           onTap: () {},
         ),
@@ -1401,7 +1407,7 @@ class _SectionDivider extends StatelessWidget {
         style: GoogleFonts.dmSans(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: AppColors.textMuted,
+          color: context.colorTextMuted,
           letterSpacing: 0.5,
         ),
       ),
@@ -1434,9 +1440,9 @@ class _SettingTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: onTap != null ? AppColors.surfaceAlt : AppColors.surface,
+          color: onTap != null ? context.colorSurfaceAlt : context.colorSurface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.colorBorder),
         ),
         child: Row(
           children: [
@@ -1456,7 +1462,7 @@ class _SettingTile extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colorTextPrimary,
                 ),
               ),
             ),
@@ -1465,7 +1471,7 @@ class _SettingTile extends StatelessWidget {
                 value!,
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: context.colorTextSecondary,
                 ),
               ),
             if (trailing != null) ...[
@@ -1473,10 +1479,10 @@ class _SettingTile extends StatelessWidget {
               trailing!,
             ],
             if (onTap != null && trailing == null && value == null)
-              const SizedBox(
+              SizedBox(
                 width: 34,
                 child: Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textMuted, size: 16),
+                    color: context.colorTextMuted, size: 16),
               ),
           ],
         ),

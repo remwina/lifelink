@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/theme_extensions.dart';
 import '../../models/notification_item.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart' as ap;
@@ -22,7 +23,7 @@ class NotificationsScreen extends StatelessWidget {
         title: Text(
           'Alerts',
           style: GoogleFonts.dmSerifDisplay(
-              fontSize: 22, color: AppColors.textPrimary),
+              fontSize: 22, color: context.colorTextPrimary),
         ),
         actions: [
           if (provider.unreadCount > 0)
@@ -78,6 +79,7 @@ class _AlertsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(18),
@@ -94,7 +96,9 @@ class _AlertsHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.75),
+              color: isDark
+                  ? AppColors.primaryLightDark
+                  : Colors.white.withValues(alpha: 0.75),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.favorite_rounded,
@@ -109,7 +113,7 @@ class _AlertsHeader extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
           ),
@@ -125,14 +129,15 @@ class _EmptyNotifications extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
     return Padding(
       padding: const EdgeInsets.only(top: 72, left: 24, right: 24),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(22),
-            decoration: const BoxDecoration(
-              color: AppColors.primaryLight,
+            decoration: BoxDecoration(
+              color: context.colorPrimaryLight.withValues(alpha: isDark ? 0.25 : 1.0),
               shape: BoxShape.circle,
             ),
             child: const Text('💌', style: TextStyle(fontSize: 42)),
@@ -140,13 +145,13 @@ class _EmptyNotifications extends StatelessWidget {
           const SizedBox(height: 18),
           Text('All quiet for now',
               style: GoogleFonts.dmSans(
-                  fontSize: 18, fontWeight: FontWeight.w700)),
+                  fontSize: 18, fontWeight: FontWeight.w700, color: context.colorTextPrimary)),
           const SizedBox(height: 6),
           Text(
             'We’ll keep an eye out and let you know when something lovely comes up.',
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(
-                fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+                fontSize: 13, color: context.colorTextSecondary, height: 1.5),
           ),
         ],
       ),
@@ -168,7 +173,7 @@ class _GroupLabel extends StatelessWidget {
         style: GoogleFonts.dmSans(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: AppColors.textMuted,
+          color: context.colorTextMuted,
           letterSpacing: 0.5,
         ),
       ),
@@ -195,16 +200,17 @@ class _NotificationCard extends StatelessWidget {
     }
   }
 
-  Color get _typeBg {
+  Color _typeBg(BuildContext context) {
+    final isDark = context.isDark;
     switch (item.type) {
       case NotificationType.urgent:
-        return AppColors.dangerLight;
+        return isDark ? AppColors.dangerLightDark : AppColors.dangerLight;
       case NotificationType.reminder:
-        return AppColors.primaryLight;
+        return context.colorPrimaryLight;
       case NotificationType.achievement:
-        return const Color(0xFFFFF3E0);
+        return isDark ? AppColors.warningLightDark : const Color(0xFFFFF3E0);
       case NotificationType.update:
-        return AppColors.successLight;
+        return isDark ? AppColors.successLightDark : AppColors.successLight;
     }
   }
 
@@ -223,6 +229,7 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
     return Dismissible(
       key: ValueKey(item.id),
       direction: DismissDirection.endToStart,
@@ -231,7 +238,7 @@ class _NotificationCard extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
-          color: AppColors.dangerLight,
+          color: isDark ? AppColors.dangerLightDark : AppColors.dangerLight,
           borderRadius: BorderRadius.circular(18),
         ),
         child: const Icon(Icons.delete_sweep_rounded, color: AppColors.danger),
@@ -247,12 +254,12 @@ class _NotificationCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: item.isRead
-                ? AppColors.surface
-                : AppColors.primaryLight.withValues(alpha: 0.4),
+                ? context.colorSurface
+                : context.colorPrimaryLight.withValues(alpha: isDark ? 0.25 : 0.4),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: item.isRead
-                  ? AppColors.border
+                  ? context.colorBorder
                   : AppColors.primary.withValues(alpha: 0.3),
             ),
           ),
@@ -264,7 +271,7 @@ class _NotificationCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: _typeBg,
+              color: _typeBg(context),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(_typeIcon, color: _typeColor, size: 20),
@@ -282,7 +289,7 @@ class _NotificationCard extends StatelessWidget {
                         style: GoogleFonts.dmSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colorTextPrimary,
                         ),
                       ),
                     ),
@@ -290,7 +297,7 @@ class _NotificationCard extends StatelessWidget {
                       item.timeAgo,
                       style: GoogleFonts.dmSans(
                         fontSize: 10,
-                        color: AppColors.textMuted,
+                        color: context.colorTextMuted,
                       ),
                     ),
                   ],
@@ -300,7 +307,7 @@ class _NotificationCard extends StatelessWidget {
                   item.body,
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colorTextSecondary,
                     height: 1.4,
                   ),
                 ),

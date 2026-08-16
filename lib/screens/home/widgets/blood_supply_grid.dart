@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/theme_extensions.dart';
 import '../../../models/blood_supply.dart';
 import '../../../providers/app_provider.dart';
 import '../../../widgets/app_card.dart';
@@ -26,7 +27,7 @@ class BloodSupplyGrid extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colorTextPrimary,
                   ),
                 ),
               ),
@@ -115,7 +116,7 @@ class BloodSupplyGridWidget extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colorTextPrimary,
               ),
             ),
             const SizedBox(height: 24),
@@ -146,7 +147,7 @@ class BloodSupplyGridWidget extends StatelessWidget {
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colorTextPrimary,
                       ),
                     ),
                     if (highlightType.isNotEmpty)
@@ -154,7 +155,7 @@ class BloodSupplyGridWidget extends StatelessWidget {
                         'Your type is highlighted',
                         style: GoogleFonts.dmSans(
                           fontSize: 11,
-                          color: AppColors.textMuted,
+                          color: context.colorTextMuted,
                         ),
                       ),
                   ],
@@ -264,7 +265,7 @@ class _BloodTypeBar extends StatelessWidget {
               border: Border.all(
                   color: AppColors.primary.withValues(alpha: 0.5),
                   width: 1.5),
-              color: AppColors.primaryLight.withValues(alpha: 0.4),
+              color: context.colorPrimaryLight.withValues(alpha: 0.4),
             )
           : null,
       child: Column(
@@ -276,7 +277,7 @@ class _BloodTypeBar extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 11,
               fontWeight: isHighlighted ? FontWeight.w800 : FontWeight.w700,
-              color: isHighlighted ? AppColors.primary : AppColors.textPrimary,
+              color: isHighlighted ? AppColors.primary : context.colorTextPrimary,
             ),
           ),
           const SizedBox(height: 5),
@@ -288,7 +289,7 @@ class _BloodTypeBar extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   height: barHeight,
-                  color: AppColors.levelBg,
+                  color: context.colorLevelBg,
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 700),
@@ -309,7 +310,7 @@ class _BloodTypeBar extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: isHighlighted
                   ? AppColors.primary
-                  : AppColors.textSecondary,
+                  : context.colorTextSecondary,
             ),
           ),
           if (entry.isLow) ...[
@@ -317,7 +318,7 @@ class _BloodTypeBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
-                color: AppColors.dangerLight,
+                color: context.isDark ? AppColors.dangerLightDark : AppColors.dangerLight,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
