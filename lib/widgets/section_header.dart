@@ -10,6 +10,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Text(
@@ -17,7 +18,7 @@ class SectionHeader extends StatelessWidget {
           style: GoogleFonts.dmSans(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
           ),
         ),
         const Spacer(),

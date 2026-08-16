@@ -122,9 +122,9 @@ class _AuthGateState extends State<_AuthGate> {
 
     switch (authProvider.status) {
       case ap.AuthStatus.unknown:
-        return const Scaffold(
-          backgroundColor: AppColors.background,
-          body: Center(
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          body: const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           ),
         );
@@ -164,7 +164,7 @@ class _SetupBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -194,7 +194,7 @@ class _SetupBanner extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium
-                      ?.copyWith(color: AppColors.textSecondary),
+                      ?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
               ],

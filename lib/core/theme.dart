@@ -68,31 +68,82 @@ class AppTextStyles {
   AppTextStyles._();
 
   static TextStyle display(BuildContext context) =>
-      GoogleFonts.dmSerifDisplay(fontSize: 28, color: AppColors.textPrimary);
+      GoogleFonts.dmSerifDisplay(
+        fontSize: 28,
+        color: _resolveTextPrimary(context),
+      );
 
   static TextStyle headlineLarge(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary);
+      GoogleFonts.dmSans(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: _resolveTextPrimary(context),
+      );
 
   static TextStyle headlineMedium(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary);
+      GoogleFonts.dmSans(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: _resolveTextPrimary(context),
+      );
 
   static TextStyle headlineSmall(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary);
+      GoogleFonts.dmSans(
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        color: _resolveTextPrimary(context),
+      );
 
   static TextStyle bodyLarge(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w400, color: AppColors.textPrimary);
+      GoogleFonts.dmSans(
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+        color: _resolveTextPrimary(context),
+      );
 
   static TextStyle bodyMedium(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textSecondary);
+      GoogleFonts.dmSans(
+        fontSize: 13,
+        fontWeight: FontWeight.w400,
+        color: _resolveTextSecondary(context),
+      );
 
   static TextStyle bodySmall(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textMuted);
+      GoogleFonts.dmSans(
+        fontSize: 11,
+        fontWeight: FontWeight.w400,
+        color: _resolveTextMuted(context),
+      );
 
   static TextStyle labelLarge(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
+      GoogleFonts.dmSans(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: _resolveTextPrimary(context),
+      );
 
   static TextStyle labelSmall(BuildContext context) =>
-      GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.5);
+      GoogleFonts.dmSans(
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+        color: _resolveTextPrimary(context),
+      );
+
+  static Color _resolveTextPrimary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textPrimaryDark
+          : AppColors.textPrimary;
+
+  static Color _resolveTextSecondary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textSecondaryDark
+          : AppColors.textSecondary;
+
+  static Color _resolveTextMuted(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textMutedDark
+          : AppColors.textMuted;
 }
 
 // ── ThemeData ─────────────────────────────────────────────────────────────────
