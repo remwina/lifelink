@@ -84,8 +84,10 @@ class _AlertsHeader extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFE3E5), Color(0xFFFFF4E8)],
+        gradient: LinearGradient(
+          colors: isDark
+              ? [AppColors.dangerLightDark, AppColors.warningLightDark]
+              : [const Color(0xFFFFE3E5), const Color(0xFFFFF4E8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

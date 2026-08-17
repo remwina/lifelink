@@ -372,7 +372,7 @@ class _SlotGrid extends StatelessWidget {
 
             Color bg, fg, border;
             if (isDisabled) {
-              bg = const Color(0xFFF0EDE8);
+              bg = context.isDark ? AppColors.surfaceDark : const Color(0xFFF0EDE8);
               fg = context.colorTextMuted;
               border = context.colorBorder;
             } else if (isSelected) {

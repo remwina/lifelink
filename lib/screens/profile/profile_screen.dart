@@ -361,7 +361,9 @@ class _ProfileInfo extends StatelessWidget {
                   vertical: 3,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3E0),
+                  color: context.isDark
+                      ? AppColors.warningLightDark
+                      : const Color(0xFFFFF3E0),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(

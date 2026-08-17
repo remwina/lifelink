@@ -54,7 +54,9 @@ class ScreenerStep extends StatelessWidget {
                                 color: context.isDark ? AppColors.warningLightDark : AppColors.warningLight,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: const Color(0xFFFFCC80),
+                                  color: context.isDark
+                                      ? AppColors.warning.withValues(alpha: 0.3)
+                                      : const Color(0xFFFFCC80),
                                 ),
                               ),
                               child: Row(
@@ -125,13 +127,13 @@ class _QuestionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.colorSurface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: answer == null
-                ? context.colorBorder
-                : answer!
-                ? const Color(0xFFA5D6A7)
-                : const Color(0xFFEF9A9A),
-        ),
+            border: Border.all(
+              color: answer == null
+                  ? context.colorBorder
+                  : answer!
+                  ? (context.isDark ? AppColors.successLightDark : const Color(0xFFA5D6A7))
+                  : (context.isDark ? AppColors.dangerLightDark : const Color(0xFFEF9A9A)),
+            ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
