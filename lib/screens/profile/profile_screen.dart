@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../core/theme_extensions.dart';
+import '../../core/transitions.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart' as ap;
 import '../../models/user_profile.dart';
 import '../../models/booking.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../help/help_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -1330,17 +1332,25 @@ class _SettingsTab extends StatelessWidget {
           ),
         ),
         const _SectionDivider(title: 'Support'),
-        _SettingTile(
+         _SettingTile(
           icon: Icons.help_rounded,
           iconColor: AppColors.primary,
           title: 'Help & FAQ',
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).push(
+              SlideUpPageRoute(page: const HelpScreen()),
+            );
+          },
         ),
         _SettingTile(
           icon: Icons.feedback_rounded,
           iconColor: AppColors.accent,
           title: 'Send feedback',
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).push(
+              SlideUpPageRoute(page: const HelpScreen()),
+            );
+          },
         ),
         _SettingTile(
           icon: Icons.info_rounded,
