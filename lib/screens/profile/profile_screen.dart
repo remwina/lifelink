@@ -11,6 +11,7 @@ import '../../models/booking.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../help/help_screen.dart';
 import '../help/feedback_screen.dart';
+import '../help/about_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -1357,7 +1358,11 @@ class _SettingsTab extends StatelessWidget {
           icon: Icons.info_rounded,
           iconColor: context.colorTextSecondary,
           title: 'About LifeLink',
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).push(
+              SlideUpPageRoute(page: const AboutScreen()),
+            );
+          },
         ),
         if (!demoMode) ...[
           const _SectionDivider(title: 'Account'),
