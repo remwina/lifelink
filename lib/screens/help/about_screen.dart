@@ -119,6 +119,72 @@ class AboutScreen extends StatelessWidget {
               color: context.colorTextSecondary,
             ),
           ),
+          const SizedBox(height: 24),
+          Text(
+            'Developer',
+            style: GoogleFonts.dmSans(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: context.colorTextPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.colorSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: context.colorBorder),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: context.colorPrimaryLight,
+                  child: const Icon(Icons.person_rounded,
+                      color: AppColors.primary, size: 30),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Jaika Remina Madrid',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: context.colorTextPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Lead developer & creator of LifeLink',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          color: context.colorTextSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Jaika is a passionate mobile developer who built '
+                        'LifeLink from the ground up with a vision of making '
+                        'blood donation more accessible and community-driven. '
+                        'When not coding, you can find them advocating for '
+                        'healthier giving habits and mentoring new developers.',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          height: 1.5,
+                          color: context.colorTextSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
