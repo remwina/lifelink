@@ -84,10 +84,7 @@ class _ThemedApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appProvider = context.watch<AppProvider>();
-    
-    final isDarkMode = appProvider.isDarkMode;
-    debugPrint('🎨 _ThemedApp building with isDarkMode: $isDarkMode');
+    final isDarkMode = context.select((AppProvider p) => p.isDarkMode);
     
     return MaterialApp(
       title: 'LifeLink',

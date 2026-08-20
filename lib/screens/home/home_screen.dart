@@ -26,24 +26,25 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final user = provider.user ?? const UserProfile(
+    final user = context.select((AppProvider p) => p.user);
+    final bloodSupply = context.select((AppProvider p) => p.bloodSupply);
+    final nextAppointment = context.select((AppProvider p) => p.nextAppointment);
+    final unreadCount = context.select((AppProvider p) => p.unreadCount);
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+
+    // Find user's blood type supply level
+    final mySupply = bloodSupply
+        .where((e) => e.type == (user?.bloodType ?? '—'))
+        .toList();
+    final myLevel = mySupply.isNotEmpty ? mySupply.first : null;
+    final myTypeIsLow = myLevel != null && myLevel.isLow;
+
+    final displayUser = user ?? const UserProfile(
       uid: '',
       name: 'Donor',
       email: '',
       bloodType: '—',
     );
-    final bottomPad = MediaQuery.of(context).padding.bottom;
-
-    // Find user's blood type supply level
-    final mySupply = provider.bloodSupply
-        .where((e) => e.type == user.bloodType)
-        .toList();
-    final myLevel = mySupply.isNotEmpty ? mySupply.first : null;
-    final myTypeIsLow = myLevel != null && myLevel.isLow;
-
-    // Next upcoming appointment from provider
-    final nextAppointment = provider.nextAppointment;
 
     return Scaffold(
       body: CustomScrollView(
@@ -77,9 +78,9 @@ class HomeScreen extends StatelessWidget {
                   IconButton(
                     icon: Icon(Icons.notifications_outlined,
                         color: context.colorTextSecondary, size: 22),
-                    onPressed: () => provider.setIndex(1),
-                  ),
-                  if (provider.unreadCount > 0)
+                    onPressed: () => context.read<AppProvider>().setIndex(1),
+                   ),
+                   if (unreadCount > 0)
                     Positioned(
                       top: 10,
                       right: 10,
@@ -123,7 +124,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              user.name,
+                              displayUser.name,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 26,
@@ -139,14 +140,14 @@ class HomeScreen extends StatelessWidget {
                               color: context.colorPrimaryLight,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
-                              user.bloodType,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
-                              ),
-                            ),
+                    child: Text(
+                      displayUser.bloodType,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
                           ),
                         ],
                       ),
@@ -159,10 +160,10 @@ class HomeScreen extends StatelessWidget {
                 if (myTypeIsLow) ...[
                   StaggeredFadeSlide(
                     delay: const Duration(milliseconds: 120),
-                    child: _CriticalBloodAlert(
-                      bloodType: user.bloodType,
+                     child: _CriticalBloodAlert(
+                      bloodType: displayUser.bloodType,
                       percentage: myLevel.percentage,
-                      onBook: () => provider.setIndex(2),
+                      onBook: () => context.read<AppProvider>().setIndex(2),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -171,9 +172,9 @@ class HomeScreen extends StatelessWidget {
                 // ── Eligibility card ─────────────────────────────────────────
                 StaggeredFadeSlide(
                   delay: const Duration(milliseconds: 160),
-                  child: EligibilityCard(
-                    user: user,
-                    onBookNow: () => provider.setIndex(2),
+                   child: EligibilityCard(
+                    user: displayUser,
+                    onBookNow: () => context.read<AppProvider>().setIndex(2),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -182,9 +183,9 @@ class HomeScreen extends StatelessWidget {
                 StaggeredFadeSlide(
                   delay: const Duration(milliseconds: 210),
                   child: _QuickActionsRow(
-                    onBook: () => provider.setIndex(2),
-                    onMap: () => provider.setIndex(3),
-                    onHistory: () => provider.setIndex(4),
+                    onBook: () => context.read<AppProvider>().setIndex(2),
+                    onMap: () => context.read<AppProvider>().setIndex(3),
+                    onHistory: () => context.read<AppProvider>().setIndex(4),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -202,14 +203,14 @@ class HomeScreen extends StatelessWidget {
                 // ── Blood supply ─────────────────────────────────────────────
                 StaggeredFadeSlide(
                   delay: const Duration(milliseconds: 300),
-                  child: BloodSupplyGridWidget(highlightType: user.bloodType),
+                  child: BloodSupplyGridWidget(highlightType: displayUser.bloodType),
                 ),
                 const SizedBox(height: 14),
 
                 // ── Impact ───────────────────────────────────────────────────
                 StaggeredFadeSlide(
                   delay: const Duration(milliseconds: 350),
-                  child: ImpactCard(user: user),
+                  child: ImpactCard(user: displayUser),
                 ),
                 const SizedBox(height: 14),
 
@@ -217,9 +218,9 @@ class HomeScreen extends StatelessWidget {
                 StaggeredFadeSlide(
                   delay: const Duration(milliseconds: 400),
                   child: NearbyCentersCard(
-                    onBook: (center) {
-                      provider.selectCenter(center);
-                      provider.setIndex(2);
+                     onBook: (center) {
+                      context.read<AppProvider>().selectCenter(center);
+                      context.read<AppProvider>().setIndex(2);
                     },
                   ),
                 ),
@@ -273,9 +274,10 @@ class _PulseButtonState extends State<_PulseButton>
     final provider = context.read<AppProvider>();
     return GestureDetector(
       onTap: provider.showPulseAlert,
-      child: Container(
-        margin: const EdgeInsets.only(right: 16),
-        child: Stack(
+      child: RepaintBoundary(
+        child: Container(
+          margin: const EdgeInsets.only(right: 16),
+          child: Stack(
           alignment: Alignment.center,
           children: [
             // Ripple ring behind the button
@@ -336,6 +338,7 @@ class _PulseButtonState extends State<_PulseButton>
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -526,7 +529,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final isCancelling = context.select((AppProvider p) => p.isCancelling);
     final uid = context.read<ap.AuthProvider>().currentUid ?? '';
 
     return Container(
@@ -576,7 +579,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${appointment.date}  ·  ${appointment.time}',
+                      '${appointment.date}  \u00b7  ${appointment.time}',
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
                         color: context.colorTextSecondary,
@@ -607,9 +610,9 @@ class _UpcomingAppointmentCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: provider.isCancelling
+              onPressed: isCancelling
                   ? null
-                  : () => _confirmCancel(context, provider, uid),
+                  : () => _confirmCancel(context, uid),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.danger,
                 side: const BorderSide(color: AppColors.danger),
@@ -618,7 +621,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              icon: provider.isCancelling
+              icon: isCancelling
                   ? const SizedBox(
                       height: 13,
                       width: 13,
@@ -629,7 +632,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                     )
                   : const Icon(Icons.cancel_outlined, size: 15),
               label: Text(
-                provider.isCancelling ? 'Cancelling…' : 'Cancel Appointment',
+                isCancelling ? 'Cancelling\u2026' : 'Cancel Appointment',
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -642,8 +645,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmCancel(
-      BuildContext context, AppProvider provider, String uid) async {
+  Future<void> _confirmCancel(BuildContext context, String uid) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -679,12 +681,13 @@ class _UpcomingAppointmentCard extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await provider.cancelAppointment(appointment.id);
+      final appProvider = context.read<AppProvider>();
+      final success = await appProvider.cancelAppointment(appointment.id);
       if (!success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              provider.cancelError ?? 'Could not cancel. Please try again.',
+              appProvider.cancelError ?? 'Could not cancel. Please try again.',
               style: GoogleFonts.dmSans(),
             ),
             backgroundColor: AppColors.danger,

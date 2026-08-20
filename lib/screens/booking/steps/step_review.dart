@@ -13,12 +13,16 @@ class ReviewStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final selectedCenter = context.select((AppProvider p) => p.selectedCenter);
+    final selectedSlot = context.select((AppProvider p) => p.selectedSlot);
+    final selectedDateIndex = context.select((AppProvider p) => p.selectedDateIndex);
+    final bookingError = context.select((AppProvider p) => p.bookingError);
+    final isConfirming = context.select((AppProvider p) => p.isConfirming);
+    final user = context.select((AppProvider p) => p.user);
     final uid = context.read<ap.AuthProvider>().currentUid ?? '';
-    final center = provider.selectedCenter;
-    final slot = provider.selectedSlot;
-    final date = bookingDates[provider.selectedDateIndex];
-    final user = provider.user;
+    final center = selectedCenter;
+    final slot = selectedSlot;
+    final date = bookingDates[selectedDateIndex];
 
     return Scaffold(
       appBar: AppBar(
@@ -177,7 +181,7 @@ class ReviewStep extends StatelessWidget {
                           const EdgeInsets.fromLTRB(16, 12, 16, 16),
                       child: Column(
                         children: [
-                          if (provider.bookingError != null)
+                          if (bookingError != null)
                             Container(
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(12),
@@ -188,7 +192,7 @@ class ReviewStep extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                provider.bookingError!,
+                                bookingError,
                                 style: GoogleFonts.dmSans(
                                   fontSize: 13,
                                   color: AppColors.danger,
@@ -198,9 +202,9 @@ class ReviewStep extends StatelessWidget {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: provider.isConfirming
+                              onPressed: isConfirming
                                   ? null
-                                  : () => provider.confirmBooking(uid),
+                                  : () => context.read<AppProvider>().confirmBooking(uid),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
@@ -211,7 +215,7 @@ class ReviewStep extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              child: provider.isConfirming
+                              child: isConfirming
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,

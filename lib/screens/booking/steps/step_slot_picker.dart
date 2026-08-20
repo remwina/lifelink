@@ -13,18 +13,22 @@ class SlotPickerStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final selectedCenter = context.select((AppProvider p) => p.selectedCenter);
+    final centers = context.select((AppProvider p) => p.centers);
+    final selectedDateIndex = context.select((AppProvider p) => p.selectedDateIndex);
+    final selectedSlot = context.select((AppProvider p) => p.selectedSlot);
+    final provider = context.read<AppProvider>();
 
     // Ensure a center is always selected in the provider — sync the fallback
     // on the next frame so we don't call setState during build.
-    if (provider.selectedCenter == null && provider.centers.isNotEmpty) {
+    if (selectedCenter == null && centers.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        provider.selectCenter(provider.centers.first);
+        provider.selectCenter(centers.first);
       });
     }
 
-    final center = provider.selectedCenter ??
-        (provider.centers.isNotEmpty ? provider.centers.first : null);
+    final center = selectedCenter ??
+        (centers.isNotEmpty ? centers.first : null);
 
     return Scaffold(
       appBar: AppBar(
@@ -71,10 +75,10 @@ class SlotPickerStep extends StatelessWidget {
                             if (center != null)
                               _CenterSelector(
                                 selected: center,
-                                onTap: provider.centers.length > 1
+                                onTap: centers.length > 1
                                     ? () => _showCenterPicker(
                                           context,
-                                          provider.centers,
+                                          centers,
                                           provider.selectCenter,
                                         )
                                     : null,
@@ -108,7 +112,7 @@ class SlotPickerStep extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             DatePickerWidget(
-                              selectedIndex: provider.selectedDateIndex,
+                              selectedIndex: selectedDateIndex,
                               onSelect: provider.selectDate,
                             ),
                             const SizedBox(height: 20),
@@ -124,7 +128,7 @@ class SlotPickerStep extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             _SlotGrid(
-                              selected: provider.selectedSlot,
+                              selected: selectedSlot,
                               onSelect: provider.selectSlot,
                             ),
                           ],
@@ -132,7 +136,7 @@ class SlotPickerStep extends StatelessWidget {
                       ),
                     ),
                     _BottomBar(
-                      enabled: provider.selectedSlot != null,
+                      enabled: selectedSlot != null,
                       onNext: provider.advanceBooking,
                     ),
                   ],

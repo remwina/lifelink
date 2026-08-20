@@ -12,7 +12,8 @@ class ScreenerStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final screenerAnswers = context.select((AppProvider p) => p.screenerAnswers);
+    final provider = context.read<AppProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -82,7 +83,7 @@ class ScreenerStep extends StatelessWidget {
                             ...screenerQuestions.map(
                               (q) => _QuestionCard(
                                 question: q,
-                                answer: provider.screenerAnswers[q.id],
+                                answer: screenerAnswers[q.id],
                                 onAnswer: (val) => context
                                     .read<AppProvider>()
                                     .setScreenerAnswer(q.id, val),

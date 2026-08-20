@@ -17,9 +17,8 @@ class NearbyCentersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final centers = provider.centers;
-    final isLoading = provider.centersLoading;
+    final centers = context.select((AppProvider p) => p.centers);
+    final isLoading = context.select((AppProvider p) => p.centersLoading);
     final visible = centers.take(3).toList();
 
     return AppCard(

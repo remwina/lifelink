@@ -71,8 +71,8 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final allCenters = provider.centers;
+    final allCenters = context.select((AppProvider p) => p.centers);
+    final isDarkMode = context.select((AppProvider p) => p.isDarkMode);
     final filtered = _applyFilters(allCenters);
     final filteredIds = filtered.map((c) => c.id).toSet();
 
@@ -99,7 +99,7 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     // OSM tile layer
                     TileLayer(
-                      urlTemplate: provider.isDarkMode
+                      urlTemplate: isDarkMode
                           ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
                           : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.lifelink.app',
@@ -182,8 +182,8 @@ class _MapScreenState extends State<MapScreen> {
             selected: _selected,
             onSelect: _selectCenter,
             onBook: (c) {
-              provider.selectCenter(c);
-              provider.setIndex(2);
+              context.read<AppProvider>().selectCenter(c);
+              context.read<AppProvider>().setIndex(2);
             },
           ),
         ],

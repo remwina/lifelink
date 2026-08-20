@@ -59,8 +59,9 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final currentIndex = provider.currentIndex;
+    final currentIndex = context.select((AppProvider p) => p.currentIndex);
+    final pulseAlertVisible = context.select((AppProvider p) => p.pulseAlertVisible);
+    final unreadCount = context.select((AppProvider p) => p.unreadCount);
 
     // Trigger animation when index changes externally (e.g. from PulseAlert)
     if (currentIndex != _prevIndex) {
@@ -99,14 +100,14 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
           ),
           bottomNavigationBar: _LifeLinkNavBar(
             currentIndex: currentIndex,
-            unreadCount: provider.unreadCount,
+            unreadCount: unreadCount,
             onTap: (i) {
               _onTabSwitch(i);
-              provider.setIndex(i);
+              context.read<AppProvider>().setIndex(i);
             },
           ),
         ),
-        if (provider.pulseAlertVisible)
+        if (pulseAlertVisible)
           const Positioned.fill(child: PulseAlertOverlay()),
       ],
     );

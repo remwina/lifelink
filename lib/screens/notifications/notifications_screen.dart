@@ -12,9 +12,9 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final notifications = context.select((AppProvider p) => p.notifications);
+    final unreadCount = context.select((AppProvider p) => p.unreadCount);
     final uid = context.read<ap.AuthProvider>().currentUid ?? '';
-    final notifications = provider.notifications;
     final unread = notifications.where((n) => !n.isRead).toList();
     final read = notifications.where((n) => n.isRead).toList();
 
@@ -26,9 +26,9 @@ class NotificationsScreen extends StatelessWidget {
               fontSize: 22, color: context.colorTextPrimary),
         ),
         actions: [
-          if (provider.unreadCount > 0)
+          if (unreadCount > 0)
             TextButton(
-              onPressed: () => provider.markAllRead(uid),
+              onPressed: () => context.read<AppProvider>().markAllRead(uid),
               child: Text(
                 'Mark all read',
                 style: GoogleFonts.dmSans(
@@ -43,7 +43,7 @@ class NotificationsScreen extends StatelessWidget {
       body: RefreshIndicator(
         color: AppColors.primary,
         backgroundColor: Theme.of(context).colorScheme.surface,
-        onRefresh: () => provider.refreshNotifications(uid),
+        onRefresh: () => context.read<AppProvider>().refreshNotifications(uid),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(

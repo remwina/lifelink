@@ -84,10 +84,9 @@ class _AlertSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final supply = context.select((AppProvider p) => p.bloodSupply);
 
     // Find the lowest blood supply level to highlight
-    final supply = provider.bloodSupply;
     BloodSupplyEntry? critical;
     if (supply.isNotEmpty) {
       critical = supply.reduce(
@@ -95,7 +94,8 @@ class _AlertSheet extends StatelessWidget {
     }
 
     // Nearest open center
-    final openCenters = provider.centers
+    final centers = context.select((AppProvider p) => p.centers);
+    final openCenters = centers
         .where((c) => c.slotStatus != SlotStatus.full)
         .toList()
       ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));

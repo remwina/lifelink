@@ -38,7 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AppProvider>().user;
+    final user = context.select((AppProvider p) => p.user);
 
     if (user == null) {
       return Scaffold(
@@ -487,7 +487,7 @@ class _AppointmentsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appointments = context.watch<AppProvider>().appointments;
+    final appointments = context.select((AppProvider p) => p.appointments);
     final uid = context.read<ap.AuthProvider>().currentUid ?? '';
 
     if (appointments.isEmpty) {
@@ -578,7 +578,7 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final isCancelling = context.select((AppProvider p) => p.isCancelling);
     final isUpcoming = appointment.status == AppointmentStatus.upcoming;
 
     return Container(
@@ -687,9 +687,9 @@ class _AppointmentCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: provider.isCancelling
+                onPressed: isCancelling
                     ? null
-                    : () => _confirmCancel(context, provider),
+                    : () => _confirmCancel(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.danger,
                   side: const BorderSide(color: AppColors.danger),
@@ -698,7 +698,7 @@ class _AppointmentCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                icon: provider.isCancelling
+                icon: isCancelling
                     ? const SizedBox(
                         height: 14,
                         width: 14,
@@ -709,7 +709,7 @@ class _AppointmentCard extends StatelessWidget {
                       )
                     : const Icon(Icons.cancel_outlined, size: 16),
                 label: Text(
-                  provider.isCancelling ? 'Cancelling…' : 'Cancel Appointment',
+                  isCancelling ? 'Cancelling…' : 'Cancel Appointment',
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -723,8 +723,7 @@ class _AppointmentCard extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmCancel(
-      BuildContext context, AppProvider provider) async {
+  Future<void> _confirmCancel(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -760,12 +759,13 @@ class _AppointmentCard extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await provider.cancelAppointment(appointment.id);
+      final appProvider = context.read<AppProvider>();
+      final success = await appProvider.cancelAppointment(appointment.id);
       if (!success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              provider.cancelError ?? 'Could not cancel. Please try again.',
+              appProvider.cancelError ?? 'Could not cancel. Please try again.',
               style: GoogleFonts.dmSans(),
             ),
             backgroundColor: AppColors.danger,
@@ -1326,7 +1326,7 @@ class _SettingsTab extends StatelessWidget {
           iconColor: context.colorTextSecondary,
           title: 'Dark mode',
           trailing: Switch(
-            value: context.watch<AppProvider>().isDarkMode,
+            value: context.select((AppProvider p) => p.isDarkMode),
             activeThumbColor: AppColors.primary,
             onChanged: (v) {
               context.read<AppProvider>().toggleDarkMode();

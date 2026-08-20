@@ -11,10 +11,12 @@ class ConfirmedStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final center = provider.selectedCenter;
-    final slot = provider.selectedSlot;
-    final date = bookingDates[provider.selectedDateIndex];
+    final selectedCenter = context.select((AppProvider p) => p.selectedCenter);
+    final selectedSlot = context.select((AppProvider p) => p.selectedSlot);
+    final selectedDateIndex = context.select((AppProvider p) => p.selectedDateIndex);
+    final center = selectedCenter;
+    final slot = selectedSlot;
+    final date = bookingDates[selectedDateIndex];
 
     return Scaffold(
       body: SafeArea(
@@ -156,6 +158,7 @@ class ConfirmedStep extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        final provider = context.read<AppProvider>();
                         provider.resetBooking();
                         provider.setIndex(0);
                       },
@@ -174,7 +177,7 @@ class ConfirmedStep extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   TextButton(
-                    onPressed: () => provider.resetBooking(),
+                    onPressed: () => context.read<AppProvider>().resetBooking(),
                     child: Text(
                       'Book another appointment',
                       style: GoogleFonts.dmSans(

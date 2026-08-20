@@ -12,7 +12,7 @@ class BloodSupplyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final supply = context.watch<AppProvider>().bloodSupply;
+    final supply = context.select((AppProvider p) => p.bloodSupply);
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -103,7 +103,7 @@ class BloodSupplyGridWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final supply = context.watch<AppProvider>().bloodSupply;
+    final supply = context.select((AppProvider p) => p.bloodSupply);
 
     if (supply.isEmpty) {
       return AppCard(

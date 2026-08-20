@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme.dart';
 import '../../providers/app_provider.dart';
 import 'steps/step_slot_picker.dart';
 import 'steps/step_screener.dart';
@@ -12,7 +11,7 @@ class BookingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final bookingStep = context.select((AppProvider p) => p.bookingStep);
 
     return Scaffold(
       body: AnimatedSwitcher(
@@ -26,13 +25,13 @@ class BookingScreen extends StatelessWidget {
           ).animate(animation),
           child: FadeTransition(opacity: animation, child: child),
         ),
-        child: _stepWidget(provider),
+        child: _stepWidget(bookingStep),
       ),
     );
   }
 
-  Widget _stepWidget(AppProvider provider) {
-    switch (provider.bookingStep) {
+  Widget _stepWidget(int bookingStep) {
+    switch (bookingStep) {
       case 0:
         return const SlotPickerStep(key: ValueKey('slot'));
       case 1:
