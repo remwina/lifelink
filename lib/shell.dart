@@ -80,19 +80,13 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                     parent: _tabCtrls[i],
                     curve: Curves.easeOutCubic,
                   );
-                  return FadeTransition(
-                    opacity: anim,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.03),
-                        end: Offset.zero,
-                      ).animate(anim),
-                      child: IgnorePointer(
-                        ignoring: i != currentIndex,
-                        child: child,
-                      ),
-                    ),
-                  );
+              return FadeTransition(
+                opacity: anim,
+                child: IgnorePointer(
+                  ignoring: i != currentIndex,
+                  child: child,
+                ),
+              );
                 },
                 child: _screens[i],
               );
@@ -242,65 +236,69 @@ class _NavItemState extends State<_NavItem>
         },
         onTapCancel: () => _ctrl.reverse(),
         behavior: HitTestBehavior.opaque,
-        child: ScaleTransition(
-          scale: _scaleAnim,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
+        child: SizedBox.expand(
+          child: Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: ScaleTransition(
+              scale: _scaleAnim,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Animated selection indicator pill
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutBack,
-                    width: selected ? 36 : 0,
-                    height: selected ? 4 : 0,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  Icon(widget.icon,
-                      color: color,
-                      size: selected ? 24 : 22),
-                  if (widget.badge > 0)
-                    Positioned(
-                      right: -5,
-                      top: -3,
-                      child: Container(
-                        width: 15,
-                        height: 15,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutBack,
+                        width: selected ? 36 : 0,
+                        height: selected ? 4 : 0,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Center(
-                          child: Text(
-                            '${widget.badge}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w800,
+                      ),
+                      Icon(widget.icon,
+                          color: color,
+                          size: selected ? 24 : 22),
+                      if (widget.badge > 0)
+                        Positioned(
+                          right: -5,
+                          top: -3,
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${widget.badge}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 10,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.w400,
+                      color: color,
                     ),
+                    child: Text(widget.label),
+                  ),
                 ],
               ),
-              const SizedBox(height: 3),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: GoogleFonts.dmSans(
-                  fontSize: 10,
-                  fontWeight:
-                      selected ? FontWeight.w700 : FontWeight.w400,
-                  color: color,
-                ),
-                child: Text(widget.label),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -359,51 +357,56 @@ class _BookItemState extends State<_BookItem>
         },
         onTapCancel: () => _ctrl.reverse(),
         behavior: HitTestBehavior.opaque,
-        child: ScaleTransition(
-          scale: _scaleAnim,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutBack,
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.primary
-                      : (isDark ? AppColors.surfaceDark : AppColors.primaryLight),
-                  shape: BoxShape.circle,
-                  boxShadow: selected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 12,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Icon(
-                  Icons.calendar_month_rounded,
-                  color: selected ? Colors.white : AppColors.primary,
-                  size: selected ? 22 : 20,
-                ),
+        child: SizedBox.expand(
+          child: Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: ScaleTransition(
+              scale: _scaleAnim,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutBack,
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? AppColors.primary
+                          : (isDark ? AppColors.surfaceDark : AppColors.primaryLight),
+                      shape: BoxShape.circle,
+                      boxShadow: selected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.35),
+                                blurRadius: 12,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Icon(
+                      Icons.calendar_month_rounded,
+                      color: selected ? Colors.white : AppColors.primary,
+                      size: selected ? 22 : 20,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 10,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.w400,
+                      color: selected
+                          ? AppColors.primary
+                          : (isDark ? AppColors.textMutedDark : AppColors.textMuted),
+                    ),
+                    child: const Text('Book'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 2),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: GoogleFonts.dmSans(
-                  fontSize: 10,
-                  fontWeight:
-                      selected ? FontWeight.w700 : FontWeight.w400,
-                  color: selected
-                      ? AppColors.primary
-                      : (isDark ? AppColors.textMutedDark : AppColors.textMuted),
-                ),
-                child: const Text('Book'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
